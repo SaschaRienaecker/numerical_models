@@ -70,3 +70,54 @@ def plot_simu(simu_name):
 
 def plot_profiles(simu_name):
     pass
+
+
+def plot_Dn_over_ellipse(simu_name):
+    
+    # path to simulation directory
+    simup = Path(datap / simu_name)
+
+    # path to figures directory
+    figpath = Path('../figures')
+
+    # Load arrays for their exploitation
+    vec_R = np.load(simup / 'vec_R.npy')
+    vec_Ne = np.load(simup / 'vec_Ne.npy')
+    vec_Te = np.load(simup / 'vec_Te.npy')
+    Vpar = np.load(simup / 'Vpar.npy')
+    Vperp = np.load(simup / 'Vperp.npy')
+    vec_Power = np.load(simup / 'vec_Power.npy')
+    vec_Albajar = np.load(simup / 'vec_Albajar.npy')
+    Dn = np.load(simup / 'Dn.npy')
+    ellipse_vperp = np.load(simup / 'ellipse_vperp.npy')
+    
+    X, Y = np.meshgrid(Vpar, Vperp)
+    
+    #Compute the position of maximum absorption and compare it to the ellipse
+    dP_on_dR = np.diff(vec_Power)
+    iR_max = np.argmax(dP_on_dR)
+    fig1 = plt.figure(1,figsize=(7, 5))
+    ax1 = fig1.add_subplot(111)
+    plt.pcolormesh(X, Y, Dn[iR_max,:,:], shading = 'gouraud')
+    plt.plot(Vpar, ellipse_vperp[iR_max, :])
+    ax1.set_xlabel("$v_{\parallel}$", fontsize = 20)
+    ax1.set_ylabel("$v_{\perp}$", fontsize = 20)
+    ax1.set_title("$D_{n}/(v_{Te}^2 \Omega_{ce})$", fontsize = 20)
+    ax1.set_aspect('equal','box')
+    plt.colorbar()
+
+    fig1.show()
+
+    print('P_{abs,tot}^{mod} / P_{abs,tot}^{ana}', (vec_Power[-1] - vec_Power[1])/(vec_Albajar[-1]-vec_Albajar[1]))
+
+    saving = input("Do you want to save the figures? [y/n] (default = n)")
+    if saving == ("y"):
+        fig1.savefig(figpath / "Dn_max.pdf")
+
+
+
+
+
+
+
+

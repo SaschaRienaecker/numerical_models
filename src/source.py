@@ -151,6 +151,9 @@ def compute_E2(Power_loc, R_loc, theta_loc, N_theta_loc, omega_p_loc, Omega_ce_l
     return Power_loc / (np.pi**1.5 * R_loc * W0 * epsilon0 * np.sin(theta_loc)**3 * abs(vg))
 
 
+#---------------------------------------------------------------------------------------------------
+"Analytical analysis"
+
 # Compute gm(zn) and its derivatives
 @jit(nopython=True)
 def Compute_Gm_derivatives(zn, m):
@@ -263,6 +266,8 @@ def Compute_A_B(omega_b, omega_p, Omega_ce, N0, theta, n_beam):
     BigB = (xn / n_beam)**2 * (2*n_beam + 3) / ((n_beam+1)*(n_beam+2)) * ey**2 * (gx - dg_dydy)
     return BigA, BigB
 
+#-----------------------------------------------------------------------------------------------------
+
 
 # Compute quantities at the entry in the plasma (=outer midplane)
 Ne_in = vec_Ne[Nr-1]
@@ -280,6 +285,8 @@ Omega_ce0 = charge * B0 / mass
 # Compute the minimum / maximum absorption major radii
 vT_on_c_max = np.sqrt(max(vec_Te)/mass) / light_speed
 Npar_in = N_in*np.cos(theta_in)
+
+"Can be found analytically using the ellipse"
 R_res_max = np.sqrt((Npar_in*R_in)**2 + (harmonic * Omega_ce0 * R0 / omega_b)**2)
 R_eff_min = - vmax * vT_on_c_max * abs(Npar_in) * R_in + \
             harmonic * Omega_ce0 * R0 * np.sqrt(1 - (vmax*vT_on_c_max)**2) / omega_b
@@ -293,6 +300,18 @@ vec_Power[Nr-1] = Power_in
 vec_Albajar[Nr-1] = Power_in
 vec_tau = np.zeros(Nr)
 Dn = np.zeros((Nr,2*Nv,Nv))
+
+#-----------------------------------------------------------------------------------------
+# "Computing the ellipse"
+
+# vpar_bar = omega_b*kpar
+
+# Ellipse = np.zeros((2*Nv, Nv))
+
+
+
+#-----------------------------------------------------------------------------------------
+"Running simulation"
 
 
 # Computation of the resonant diffusion coefficient and
@@ -372,6 +391,8 @@ for iR in range(Nr-2,-1,-1):
     # Display the index that has been computed
     if (Power_absorbed > 0.):
         print("iR", iR)
+        print("theta_res", theta_res)
+        print("theta0_loc",theta0_loc)
 
 if not simup.exists():
     Path.mkdir(simup)

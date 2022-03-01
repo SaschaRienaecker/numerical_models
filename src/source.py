@@ -29,6 +29,10 @@ simu = importlib.import_module(str('simu.' + simu_name))
 # path to data directory
 datap = Path('../data')
 
+# path to simulation output directory
+simup = Path(datap / simu_name)
+
+
 # # Plasma inputs
 Ne0 = simu.Ne0                              # maximum electron density [m^{-3}]
 Te0 = simu.Te0                              # maximum of electron temperature [J] (Warning: kB included)
@@ -369,12 +373,15 @@ for iR in range(Nr-2,-1,-1):
     if (Power_absorbed > 0.):
         print("iR", iR)
 
+if not simup.exists():
+    Path.mkdir(simup)
+
 # Save arrays in prevision of their exploitation
-np.save(datap / 'vec_R.npy', vec_R)
-np.save(datap / 'vec_Ne.npy', vec_Ne)
-np.save(datap / 'vec_Te.npy', vec_Te)
-np.save(datap / 'Vpar.npy', Vpar)
-np.save(datap / 'Vperp.npy', Vperp)
-np.save(datap / 'vec_Power.npy', vec_Power)
-np.save(datap / 'vec_Albajar.npy', vec_Albajar)
-np.save(datap / 'Dn.npy', Dn)
+np.save(simup / 'vec_R.npy', vec_R)
+np.save(simup / 'vec_Ne.npy', vec_Ne)
+np.save(simup / 'vec_Te.npy', vec_Te)
+np.save(simup / 'Vpar.npy', Vpar)
+np.save(simup / 'Vperp.npy', Vperp)
+np.save(simup / 'vec_Power.npy', vec_Power)
+np.save(simup / 'vec_Albajar.npy', vec_Albajar)
+np.save(simup / 'Dn.npy', Dn)

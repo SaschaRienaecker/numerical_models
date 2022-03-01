@@ -7,23 +7,35 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
+import sys
+
+# simulation name (from command line argument)
+sys.path.append('../')
+if len(sys.argv) > 1:
+    simu_name = str(sys.argv[1])
+else:
+    simu_name = 'test'
 
 # path to data directory
 datap = Path('../data')
 
+# path to simulation directory
+simup = Path(datap / simu_name)
+
+
 # path to figures directory
 figpath = Path('../figures')
 
-# Load arrays for their exploitation
-vec_R = np.load(datap / 'vec_R.npy')
-vec_Ne = np.load(datap / 'vec_Ne.npy')
-vec_Te = np.load(datap / 'vec_Te.npy')
-Vpar = np.load(datap / 'Vpar.npy')
-Vperp = np.load(datap / 'Vperp.npy')
-vec_Power = np.load(datap / 'vec_Power.npy')
-vec_Albajar = np.load(datap / 'vec_Albajar.npy')
-Dn = np.load(datap / 'Dn.npy')
 
+# Load arrays for their exploitation
+vec_R = np.load(simup / 'vec_R.npy')
+vec_Ne = np.load(simup / 'vec_Ne.npy')
+vec_Te = np.load(simup / 'vec_Te.npy')
+Vpar = np.load(simup / 'Vpar.npy')
+Vperp = np.load(simup / 'Vperp.npy')
+vec_Power = np.load(simup / 'vec_Power.npy')
+vec_Albajar = np.load(simup / 'vec_Albajar.npy')
+Dn = np.load(simup / 'Dn.npy')
 
 # Plot the density, temperature and Power profiles
 fig0 = plt.figure(0,figsize=(10, 10))

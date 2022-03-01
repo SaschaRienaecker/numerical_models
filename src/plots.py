@@ -49,29 +49,47 @@ def plot_Dn_over_ellipse(simu_name):
     vec_Albajar = np.load(simup / 'vec_Albajar.npy')
     Dn = np.load(simup / 'Dn.npy')
     ellipse_vperp = np.load(simup / 'ellipse_vperp.npy')
+    ellipse_vpar  = np.load(simup / 'ellipse_vpar.npy')
 
     X, Y = np.meshgrid(Vpar, Vperp)
 
     #Compute the position of maximum absorption and compare it to the ellipse
     dP_on_dR = np.diff(vec_Power)
     iR_max = np.argmax(dP_on_dR)
-    fig1 = plt.figure(1,figsize=(7, 5))
-    ax1 = fig1.add_subplot(111)
-    plt.pcolormesh(X, Y, Dn[iR_max,:,:], shading = 'gouraud')
-    plt.plot(Vpar, ellipse_vperp[iR_max, :])
-    ax1.set_xlabel("$v_{\parallel}$", fontsize = 20)
-    ax1.set_ylabel("$v_{\perp}$", fontsize = 20)
-    ax1.set_title("$D_{n}/(v_{Te}^2 \Omega_{ce})$", fontsize = 20)
-    ax1.set_aspect('equal','box')
+    print("iR_max", iR_max)
+    # fig1 = plt.figure(1,figsize=(7, 5))
+    # ax1 = fig1.add_subplot(111)
+    # plt.pcolormesh(X, Y, np.transpose(Dn[iR_max,:,:]), shading = 'gouraud')
+    
+    # ax1.set_xlabel("$v_{\parallel}$", fontsize = 20)
+    # ax1.set_ylabel("$v_{\perp}$", fontsize = 20)
+    # ax1.set_title("$D_{n}/(v_{Te}^2 \Omega_{ce})$", fontsize = 20)
+    # ax1.set_aspect('equal','box')
+    # plt.colorbar()
+
+    # fig1.show()
+    plt.figure()
+    plt.pcolormesh(X, Y, np.transpose(Dn[iR_max,:,:]), shading = 'gouraud')
+    plt.xlabel("$v_{\parallel}$", fontsize = 20)
+    plt.ylabel("$v_{\perp}$", fontsize = 20)
+    plt.title("$D_{n}/(v_{Te}^2 \Omega_{ce})$", fontsize = 20)
     plt.colorbar()
+    plt.show()
+    
+    # print("ellispe_vperp", np.shape(ellipse_vperp[iR_max, :]))
+    # print("vpar", np.shape(Vpar))
+    
+    plt.figure()
+    plt.plot(ellipse_vpar[iR_max, :], ellipse_vperp[iR_max, :])
+    plt.show()
+    
+    #print(np.linalg.norm(ellipse_vperp))
+    
+    #print('P_{abs,tot}^{mod} / P_{abs,tot}^{ana}', (vec_Power[-1] - vec_Power[1])/(vec_Albajar[-1]-vec_Albajar[1]))
 
-    fig1.show()
-
-    print('P_{abs,tot}^{mod} / P_{abs,tot}^{ana}', (vec_Power[-1] - vec_Power[1])/(vec_Albajar[-1]-vec_Albajar[1]))
-
-    saving = input("Do you want to save the figures? [y/n] (default = n)")
-    if saving == ("y"):
-        fig1.savefig(figpath / "Dn_max.pdf")
+    # saving = input("Do you want to save the figures? [y/n] (default = n)")
+    # if saving == ("y"):
+    #     fig1.savefig(figpath / "Dn_max.pdf")
 
 
 def plot_profiles(simu_name, axs=None):

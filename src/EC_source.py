@@ -2,7 +2,6 @@
 """
 @author: Peter Donnel
 """
-
 # Import useful libraries
 import numpy as np
 import math
@@ -10,9 +9,8 @@ from scipy.special import jn
 from scipy.special import spherical_jn
 from pathlib import Path
 from numba import jit
-
-# path to data directory
-datap = Path('../data')
+import sys
+import importlib
 
 # Physical constants
 charge = 1.602 * 10**(-19)   # elementary charge [C]
@@ -20,29 +18,37 @@ mass = 9.109 * 10**(-31)     # electron mass [kg]
 light_speed = 299792458      # speed of light [m/s]
 epsilon0 = 8.854 * 10**(-12) # vaccum permittivity [F/m]
 
+# load the simulation input from a .py file (name of the file as command line argument)
+sys.path.append('../')
+if len(sys.argv) > 1:
+    simu_name = str(sys.argv[1])
+else:
+    simu_name = 'test'
+simu = importlib.import_module(str('simu.' + simu_name))
 
-# Plasma inputs
-Ne0 = 1.0 * 10**(19)                  # maximum electron density [m^{-3}]
-Te0 = 2.0 * 10**3 * 1.602 * 10**(-19) # maximum of electron temperature [J] (Warning: kB included)
-B0 = 1.4                              # magnetic field on axis [T]
-R0 = 1.0                              # major radius [m]
-a0 = 0.25                             # minor radius [m]
+# path to data directory
+datap = Path('../data')
 
+# # Plasma inputs
+Ne0 = simu.Ne0                              # maximum electron density [m^{-3}]
+Te0 = simu.Te0                              # maximum of electron temperature [J] (Warning: kB included)
+B0  = simu.B0                               # magnetic field on axis [T]
+R0  = simu.R0                               # major radius [m]
+a0  = simu.a0                               # minor radius [m]
 
 # Beam inputs
-harmonic = 2                          # harmonic of the cyclotron frequency
-theta_in = np.pi/2                    # Toroidal angle of injection
-omega_b = 7.8 * 10**10 * 2 * np.pi    # beam pulsation [Hz]
-W0 = 0.02                             # beam width [m]
-Power_in = 1                          # power input of the beam [W]
-
+harmonic    = simu.harmonic                     # harmonic of the cyclotron frequency
+theta_in    = simu.theta_in                     # Toroidal angle of injection
+omega_b     = simu.omega_b                      # beam pulsation [Hz]
+W0          = simu.W0                           # beam width [m]
+Power_in    = simu.Power_in                     # power input of the beam [W]
 
 # Numerical imput data
-vmax = 4   # maximal velocity (normalized to the local thermal velocity)
+vmax    = simu.vmax     # maximal velocity (normalized to the local thermal velocity)
 # Nv = 300   # number of grid points in velocity space (Nv for vperp, 2*Nv for vpar)
-Nv = 50   # number of grid points in velocity space (Nv for vperp, 2*Nv for vpar)
+Nv      = simu.Nv       # number of grid points in velocity space (Nv for vperp, 2*Nv for vpar)
 # Nr = 400   # number of grid points for the major radius direction
-Nr = 50   # number of grid points for the major radius direction
+Nr      = simu.Nr       # number of grid points for the major radius direction
 
 
 # Generation of the grid
@@ -362,7 +368,6 @@ for iR in range(Nr-2,-1,-1):
     # Display the index that has been computed
     if (Power_absorbed > 0.):
         print("iR", iR)
-
 
 # Save arrays in prevision of their exploitation
 np.save(datap / 'vec_R.npy', vec_R)

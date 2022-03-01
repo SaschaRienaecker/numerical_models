@@ -9,6 +9,7 @@ import math
 from scipy.special import jn
 from scipy.special import spherical_jn
 from pathlib import Path
+from numba import jit
 
 # path to data directory
 datap = Path('../data')
@@ -63,6 +64,7 @@ for iR in range(Nr):
 
 
 # Compute the refractive index
+@jit(nopython=True)
 def compute_N(theta_loc, P_loc, omega_ce_loc, omega_b_loc):
     normalized_freq = omega_ce_loc / omega_b_loc
     R_loc = (P_loc - normalized_freq) / (1 - normalized_freq)
@@ -78,6 +80,7 @@ def compute_N(theta_loc, P_loc, omega_ce_loc, omega_b_loc):
 
 
 # Compute the resonant angle
+@jit(nopython=True)
 def compute_theta_res(lambda_loc, P_loc, Omegace_on_omegab_loc):
     # Compute analytically the result for really low lambda_loc
     if ( abs(lambda_loc) < 10**(-15)):
@@ -100,6 +103,7 @@ def compute_theta_res(lambda_loc, P_loc, Omegace_on_omegab_loc):
 
 # Compute |Theta_n|^2
 def compute_Theta2_n(rho, theta, Ntheta, P_loc, omega_ce_loc, omega_b_loc, vpar, vperp):
+
     normalized_freq = omega_ce_loc / omega_b_loc
     R_loc = (P_loc - normalized_freq) / (1 - normalized_freq)
     L_loc = (P_loc + normalized_freq) / (1 + normalized_freq)
@@ -120,6 +124,7 @@ def compute_Theta2_n(rho, theta, Ntheta, P_loc, omega_ce_loc, omega_b_loc, vpar,
 
 
 # Compute the electric field given the power of the beam
+@jit(nopython=True)
 def compute_E2(Power_loc, R_loc, theta_loc, N_theta_loc, omega_p_loc, Omega_ce_loc, omega_b_loc):
     omega2_p = omega_p_loc**2
     Omega2_ce = Omega_ce_loc**2
@@ -137,6 +142,7 @@ def compute_E2(Power_loc, R_loc, theta_loc, N_theta_loc, omega_p_loc, Omega_ce_l
 
 
 # Compute gm(zn) and its derivatives
+@jit(nopython=True)
 def Compute_Gm_derivatives(zn, m):
     if (m==0):
         Gm = np.sinh(zn) / zn

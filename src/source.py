@@ -310,8 +310,40 @@ class Simu:
         vec_Albajar[Nr-1] = Power_in
         vec_tau = np.zeros(Nr)
         Dn = np.zeros((Nr,2*Nv,Nv))
+        ellipse_vperp = np.zeros((Nr, 2*Nv))
+        ellipse_vpar  = np.zeros((Nr, 2*Nv))
+        
+#-----------------------------------------------------------------------------------------
+        "Computing the ellipse"
+        k = omega_b/light_speed
+        
+        def ellipse(theta, Omega_ce, iR):
+            kpar = k*np.cos(theta)
+            vpar_bar = omega_b*kpar*light_speed**2/((kpar*light_speed)**2 + (harmonic*Omega_ce_loc)**2)
+
+            
+            Delta_vpar = light_speed* \
+                np.sqrt((kpar*light_speed)**2 + (harmonic*Omega_ce)**2 - omega_b**2)*(harmonic*Omega_ce) \
+                /((kpar*light_speed)**2+(harmonic*Omega_ce)**2)
+                
+            Delta_vperp = light_speed*np.sqrt(((kpar*light_speed)**2 + (harmonic*Omega_ce)**2 - omega_b**2) \
+                                             /((kpar*light_speed)**2 + (harmonic*Omega_ce)**2))
+            
+            #vpar = np.linspace(-vmax,vmax,2*Nv)
+            vpar = np.linspace(-Delta_vpar + vpar_bar, Delta_vpar + vpar_bar, 2*Nv)
+            vperp = np.zeros(2*Nv)
+            
+            
+            for i in range(2*Nv):
+                vperp[i] = Delta_vperp*np.sqrt(1-((vpar[i]-vpar_bar)/Delta_vpar)**2)
+            #vperp = (1-((vpar-vpar_bar)/Delta_vpar)**2)*Delta_vperp/()
+            # for i in range(2*Nv):
+            #     vperp[i] = Delta_vperp*np.sqrt(1-((vpar[i]-vpar_bar)/Delta_vpar)**2)
+            # return vpar/vec_Te[iR]*mass, vperp/vec_Te[iR]*mass
+            return vpar/np.sqrt(vec_Te[iR]/mass), vperp/np.sqrt(vec_Te[iR]/mass)
 
 
+#------------------------------------------------------------------------------------------------------
         # Computation of the resonant diffusion coefficient and
         # the numerical and theoretical power deposition
         tau_loc = 0.
@@ -334,6 +366,9 @@ class Simu:
                 Power_loc = vec_Power[iR+1]
                 E2_loc = compute_E2(Power_loc, R_loc, theta0_loc, N0_loc, omega_p_loc, \
                                     Omega_ce_loc, omega_b)
+                
+                # Computing the ellipse
+                ellipse_vpar[iR, :], ellipse_vperp[iR,:] =  ellipse(theta0_loc, Omega_ce_loc, iR)
 
                 # Compute the theoretical optical thickness (Albajar)
                 Npar_loc = N0_loc * np.cos(theta0_loc)
@@ -402,3 +437,5 @@ class Simu:
         np.save(simup / 'vec_Power.npy', vec_Power)
         np.save(simup / 'vec_Albajar.npy', vec_Albajar)
         np.save(simup / 'Dn.npy', Dn)
+        np.save(simup / 'ellipse_vperp.npy', ellipse_vperp)
+        np.save(simup / 'ellipse_vpar.npy', ellipse_vpar)

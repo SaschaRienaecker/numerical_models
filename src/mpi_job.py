@@ -15,7 +15,7 @@ size = comm.Get_size()
 rank = comm.Get_rank()
 root = 0
 
-def def_mpi_task(simus, root=0):
+def mpi_task(simus, root=0):
 
     N_simu = len(simus)
     is_root = rank==root
@@ -72,9 +72,10 @@ def frequency_scan():
 def density_scan():
 
     # frequency scan
-    Ne0 = np.array([1,2,3,4]) # 1e19 m⁻³
+    Ne0 = np.linspace(0.1, 2, 8) # 1e19 m⁻³
     N_simu = len(Ne0)
-    Names = ['Ne0_{}e19'.format(n) for n in Ne0]
+    Names = ['Ne0_{:.2f}e19'.format(n) for n in Ne0]
+    print(Names)
     simus = [None] * N_simu
 
     for i in range(N_simu):
@@ -84,19 +85,18 @@ def density_scan():
                         a0=0.25,
                         harmonic=2,
                         theta_in=np.pi/2,
-                        omega_b=Omega_b[i],
+                        omega_b=7.8e10 * 2 * np.pi,
                         W0=0.02,
                         Power_in=1,
                         vmax=4,
                         Nv=100,
                         Nr=200,
-                        Ne0=Ne0[i],
+                        Ne0=Ne0[i] * 1e19,
                         Te0=2.0e3 * 1.602e-19
                         )
-    # simu.compute()
-    def_mpi_task(simus)
+    return simus
 
 if __name__ == '__main__':
 
     simus = density_scan()
-    def_mpi_task(simus)
+    mpi_task(simus)

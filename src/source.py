@@ -300,10 +300,28 @@ vec_Power[Nr-1] = Power_in
 vec_Albajar[Nr-1] = Power_in
 vec_tau = np.zeros(Nr)
 Dn = np.zeros((Nr,2*Nv,Nv))
+ellipse_vperp = np.zeros((Nr, 2*Nv))
 
-
-
-
+#---------------------------------------------------------------------------------------------------
+"Victor"
+k = omega_b/light_speed
+def ellipse(k, theta, Omega_ce_loc):
+    kpar = k*np.cos(theta)
+    
+    
+    vpar_bar = omega_b*kpar*light_speed**2/((kpar*light_speed)**2 + (harmonic*Omega_ce_loc))
+    
+    Delta_vpar = light_speed*np.sqrt(((kpar*light_speed)**2 + (harmonic*Omega_ce_loc)**2 - omega_b**2)) \
+        *(harmonic*Omega_ce_loc)/((kpar*light_speed)**2+(harmonic*Omega_ce_loc)**2)
+        
+    Delta_vperp = light_speed*np.sqrt(((kpar*light_speed)**2 + (harmonic*Omega_ce_loc)**2 - omega_b**2) \
+                                     /((kpar*light_speed)**2 + (harmonic*Omega_ce_loc)**2))
+    
+    vpar = np.linspace(-vmax,vmax,2*Nv)
+    vperp = Delta_vperp*np.sqrt(1-((vpar-vpar_bar)/Delta_vpar)**2)
+    # for i in range(2*Nv):
+    #     vperp[i] = Delta_vperp*np.sqrt(1-((vpar[i]-vpar_bar)/Delta_vpar)**2)
+    return vperp
 
 #-----------------------------------------------------------------------------------------
 "Running simulation"
@@ -331,6 +349,9 @@ for iR in range(Nr-2,-1,-1):
         Power_loc = vec_Power[iR+1]
         E2_loc = compute_E2(Power_loc, R_loc, theta0_loc, N0_loc, omega_p_loc, \
                             Omega_ce_loc, omega_b)
+            
+        # Add the ellipse at this position
+        #ellipse_vperp[iR,:] = ellipse(k, theta0_loc, Omega_ce_loc)
 
         # Compute the theoretical optical thickness (Albajar)
         Npar_loc = N0_loc * np.cos(theta0_loc)
@@ -401,3 +422,4 @@ np.save(simup / 'Vperp.npy', Vperp)
 np.save(simup / 'vec_Power.npy', vec_Power)
 np.save(simup / 'vec_Albajar.npy', vec_Albajar)
 np.save(simup / 'Dn.npy', Dn)
+#np.save(simup / 'ellipse_vperp.npy', ellipse_vperp)

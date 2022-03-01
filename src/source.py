@@ -301,12 +301,7 @@ vec_Albajar[Nr-1] = Power_in
 vec_tau = np.zeros(Nr)
 Dn = np.zeros((Nr,2*Nv,Nv))
 
-#-----------------------------------------------------------------------------------------
-# "Computing the ellipse"
 
-# vpar_bar = omega_b*kpar
-
-# Ellipse = np.zeros((2*Nv, Nv))
 
 
 

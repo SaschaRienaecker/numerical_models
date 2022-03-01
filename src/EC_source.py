@@ -8,7 +8,10 @@ import numpy as np
 import math
 from scipy.special import jn
 from scipy.special import spherical_jn
+from pathlib import Path
 
+# path to data directory
+datap = Path('../data')
 
 # Physical constants
 charge = 1.602 * 10**(-19)   # elementary charge [C]
@@ -35,8 +38,10 @@ Power_in = 1                          # power input of the beam [W]
 
 # Numerical imput data
 vmax = 4   # maximal velocity (normalized to the local thermal velocity)
-Nv = 300   # number of grid points in velocity space (Nv for vperp, 2*Nv for vpar)
-Nr = 400   # number of grid points for the major radius direction
+# Nv = 300   # number of grid points in velocity space (Nv for vperp, 2*Nv for vpar)
+Nv = 50   # number of grid points in velocity space (Nv for vperp, 2*Nv for vpar)
+# Nr = 400   # number of grid points for the major radius direction
+Nr = 50   # number of grid points for the major radius direction
 
 
 # Generation of the grid
@@ -64,13 +69,13 @@ def compute_N(theta_loc, P_loc, omega_ce_loc, omega_b_loc):
     L_loc = (P_loc + normalized_freq) / (1 + normalized_freq)
     S_loc = 0.5 * (R_loc + L_loc)
     tmp1 = (R_loc*L_loc + S_loc*P_loc) * np.tan(theta_loc)**2 + \
-           2 * P_loc * S_loc 
+           2 * P_loc * S_loc
     tmp2 = (S_loc*P_loc - R_loc*L_loc)**2 * np.tan(theta_loc)**4 + \
            P_loc**2 * (L_loc - R_loc)**2 * (np.tan(theta_loc)**2 + 1)
     tmp3 = 2 * (S_loc * np.tan(theta_loc)**2 + P_loc)
     Nx2 = (tmp1 - np.sqrt(tmp2)) / tmp3
     return np.sqrt(Nx2)
-    
+
 
 # Compute the resonant angle
 def compute_theta_res(lambda_loc, P_loc, Omegace_on_omegab_loc):
@@ -86,7 +91,7 @@ def compute_theta_res(lambda_loc, P_loc, Omegace_on_omegab_loc):
         tmp3 =  P_loc * (P_loc**2 - Omegace_on_omegab_loc**2) + \
                 lambda2 * Omegace_on_omegab_loc**2 * (P_loc - 1)
         x_lambda = (tmp1 + tmp2) / tmp3
-        
+
         if ( lambda_loc>0 ):
             return 0.5*np.arccos(x_lambda)
         else:
@@ -206,8 +211,8 @@ def Compute_usefull_derivatives(xn, yn, m):
                        2*xn**2*dGm_dx_p*dGm_dx_m) / (np.pi * (zn_p-zn_m)**2)
         df_dxdy = 4 * xn / (np.pi * (zn_p-zn_m)**2) * \
                   (dGm_dx_p*Gm_m - dGm_dx_m*Gm_p + yn*dGm_dx_p*dGm_dx_m - \
-                   zn_p*d2Gm_dx2_p*Gm_m - zn_m*d2Gm_dx2_m*Gm_p) 
-        
+                   zn_p*d2Gm_dx2_p*Gm_m - zn_m*d2Gm_dx2_m*Gm_p)
+
     return fx, df_dx, df_dy, df_dydy, df_dxdy
 
 
@@ -279,7 +284,7 @@ Dn = np.zeros((Nr,2*Nv,Nv))
 tau_loc = 0.
 for iR in range(Nr-2,-1,-1):
     Power_absorbed = 0.
-    R_loc = vec_R[iR] 
+    R_loc = vec_R[iR]
     if R_loc < max(R_res_max,R_eff_max) and R_loc > R_eff_min:
         Ne_loc = vec_Ne[iR]
         Te_loc = vec_Te[iR]
@@ -288,7 +293,7 @@ for iR in range(Nr-2,-1,-1):
         omega_p_loc = np.sqrt(Ne_loc * charge**2 / (epsilon0 * mass))
         P_loc = 1 - (omega_p_loc/omega_b)**2
         vT_on_c_loc = np.sqrt(Te_loc/mass) / light_speed
-        arg_theta0 = R_in / R_loc  * N_in * np.cos(theta_in) 
+        arg_theta0 = R_in / R_loc  * N_in * np.cos(theta_in)
         theta0_loc = compute_theta_res(arg_theta0,P_loc, Omega_ce_loc/omega_b)
         N0_loc = compute_N(theta0_loc, P_loc, Omega_ce_loc, omega_b)
         sigma_loc = light_speed / (omega_b * N0_loc * W0)
@@ -314,9 +319,9 @@ for iR in range(Nr-2,-1,-1):
                         (light_speed * Omega_ce_loc * harmonic0)
             tau_loc += alpha_loc * abs(np.sin(theta0_loc)) * dR
 
-            
+
         # Compute the resonant diffusion coefficient
-        for ivpar in range(2*Nv):  
+        for ivpar in range(2*Nv):
             for ivperp in range(Nv):
                 lorentz = 1 / np.sqrt(1 - (Vpar[ivpar]**2 + Vperp[ivperp]**2) * vT_on_c_loc**2)
                 lambda_phys = (1 - harmonic * Omega_ce_loc/omega_b / lorentz) / \
@@ -338,11 +343,11 @@ for iR in range(Nr-2,-1,-1):
 
                         Power_absorbed += Vperp[ivperp]**3 * Dn[iR, ivpar,ivperp] * \
                                           np.exp(- (Vpar[ivpar]**2 + Vperp[ivperp]**2)/2)
-                
+
         # Normalisation of the Power absorbed
         Power_absorbed *= Ne_loc * mass * dVpar * dVperp * dR * R_loc * np.sqrt(2) * np.pi * W0
         # Normalisation of the resonant diffusion coefficient
-        Dn[iR, :, :] = Dn[iR, :, :] / (Omega_ce_loc * Te_loc / mass) 
+        Dn[iR, :, :] = Dn[iR, :, :] / (Omega_ce_loc * Te_loc / mass)
 
     # Fill the power vector
     vec_Power[iR] = vec_Power[iR+1] - Power_absorbed
@@ -354,14 +359,11 @@ for iR in range(Nr-2,-1,-1):
 
 
 # Save arrays in prevision of their exploitation
-np.save('vec_R.npy', vec_R)
-np.save('vec_Ne.npy', vec_Ne)
-np.save('vec_Te.npy', vec_Te)
-np.save('Vpar.npy', Vpar)
-np.save('Vperp.npy', Vperp)
-np.save('vec_Power.npy', vec_Power)
-np.save('vec_Albajar.npy', vec_Albajar)
-np.save('Dn.npy', Dn)
-
-
-
+np.save(datap / 'vec_R.npy', vec_R)
+np.save(datap / 'vec_Ne.npy', vec_Ne)
+np.save(datap / 'vec_Te.npy', vec_Te)
+np.save(datap / 'Vpar.npy', Vpar)
+np.save(datap / 'Vperp.npy', Vperp)
+np.save(datap / 'vec_Power.npy', vec_Power)
+np.save(datap / 'vec_Albajar.npy', vec_Albajar)
+np.save(datap / 'Dn.npy', Dn)

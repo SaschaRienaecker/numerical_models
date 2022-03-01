@@ -6,16 +6,23 @@
 # Import useful libraries
 import numpy as np
 import matplotlib.pyplot as plt
+from pathlib import Path
+
+# path to data directory
+datap = Path('../data')
+
+# path to figures directory
+figpath = Path('../figures')
 
 # Load arrays for their exploitation
-vec_R = np.load('vec_R.npy')
-vec_Ne = np.load('vec_Ne.npy')
-vec_Te = np.load('vec_Te.npy')
-Vpar = np.load('Vpar.npy')
-Vperp = np.load('Vperp.npy')
-vec_Power = np.load('vec_Power.npy')
-vec_Albajar = np.load('vec_Albajar.npy')
-Dn = np.load('Dn.npy')
+vec_R = np.load(datap / 'vec_R.npy')
+vec_Ne = np.load(datap / 'vec_Ne.npy')
+vec_Te = np.load(datap / 'vec_Te.npy')
+Vpar = np.load(datap / 'Vpar.npy')
+Vperp = np.load(datap / 'Vperp.npy')
+vec_Power = np.load(datap / 'vec_Power.npy')
+vec_Albajar = np.load(datap / 'vec_Albajar.npy')
+Dn = np.load(datap / 'Dn.npy')
 
 
 # Plot the density, temperature and Power profiles
@@ -43,7 +50,7 @@ ax1 = fig1.add_subplot(111)
 plt.pcolor(Vpar, Vperp, np.transpose(Dn[iR_max,:,:]))
 ax1.set_xlabel("$v_{\parallel}$", fontsize = 20)
 ax1.set_ylabel("$v_{\perp}$", fontsize = 20)
-ax1.set_title("$D_{n}/(v_{Te}^2 \Omega_{ce})$", fontsize = 20) 
+ax1.set_title("$D_{n}/(v_{Te}^2 \Omega_{ce})$", fontsize = 20)
 ax1.set_aspect('equal','box')
 plt.colorbar()
 
@@ -53,8 +60,5 @@ print('P_{abs,tot}^{mod} / P_{abs,tot}^{ana}', (vec_Power[-1] - vec_Power[1])/(v
 
 saving = input("Do you want to save the figures? [y/n] (default = n)")
 if saving == ("y"):
-    fig0.savefig("Radial_profiles.png")
-    fig1.savefig("Dn_max.png")
-
-
-
+    fig0.savefig(figpath / "Radial_profiles.pdf")
+    fig1.savefig(figpath / "Dn_max.pdf")

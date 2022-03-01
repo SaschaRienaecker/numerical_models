@@ -2,9 +2,13 @@ overleaf
 
 *.pdf
 
+# ignore data files
+*.npy
+
+
 *.pyc
 .ipynb_checkpoints/
-test.ipynb
+
 
 # ignore what latex produces
 *.aux

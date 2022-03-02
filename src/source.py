@@ -24,7 +24,7 @@ datap = Path('../data')
 
 class Simu:
 
-    def __init__(self, name, B0, R0, a0, harmonic, theta_in, omega_b, W0, Power_in, vmax, Nv, Nr, Ne0, Te0):
+    def __init__(self, name, B0, R0, a0, harmonic, theta_in, omega_b, W0, Power_in, vmax, Nv, Nr, Ne0, Te0, mode='X'):
         self.name = name
 
         # Plasma inputs
@@ -48,7 +48,9 @@ class Simu:
         self.Ne0        = Ne0   # maximum electron density [m^{-3}]
         self.Te0        = Te0   # maximum of electron temperature [J] (Warning: kB included)
 
-    def compute(simu):
+        self.mode       = mode  # polarization ('X' or 'O')
+
+    def compute_2(simu):
 
         # path to simulation output directory
         simup = Path(datap / simu.name)
@@ -74,6 +76,8 @@ class Simu:
         # Nr = 400   # number of grid points for the major radius direction
         Nr      = simu.Nr       # number of grid points for the major radius direction
 
+        mode    = simu.mode
+
         # Generation of the grid
         Vpar = np.linspace(-vmax,vmax,2*Nv)
         Vperp = np.linspace(0.,vmax,Nv)
@@ -93,7 +97,7 @@ class Simu:
 
         # Compute the refractive index
         @jit(nopython=True)
-        def compute_N(theta_loc, P_loc, omega_ce_loc, omega_b_loc, mode='X'):
+        def compute_N(theta_loc, P_loc, omega_ce_loc, omega_b_loc):
             normalized_freq = omega_ce_loc / omega_b_loc
             R_loc = (P_loc - normalized_freq) / (1 - normalized_freq)
             L_loc = (P_loc + normalized_freq) / (1 + normalized_freq)
@@ -312,16 +316,10 @@ class Simu:
         vec_Albajar[Nr-1] = Power_in
         vec_tau = np.zeros(Nr)
         Dn = np.zeros((Nr,2*Nv,Nv))
-<<<<<<< HEAD
         ellipse_vperp = np.zeros((5, Nr, 2*Nv))
         ellipse_vpar  = np.zeros((5, Nr, 2*Nv))
         vec_theta0 = np.zeros(Nr)
-        
-=======
-        ellipse_vperp = np.zeros((Nr, 2*Nv))
-        ellipse_vpar  = np.zeros((Nr, 2*Nv))
 
->>>>>>> 090762891b8cc808cb73b9a96cb3ec5c30ec98f1
 #-----------------------------------------------------------------------------------------
         "Computing the ellipse"
         k = omega_b/light_speed
@@ -341,19 +339,8 @@ class Simu:
             #vpar = np.linspace(-vmax,vmax,2*Nv)
             vpar = np.linspace(-Delta_vpar + vpar_bar, Delta_vpar + vpar_bar, 2*Nv)
             vperp = np.zeros(2*Nv)
-<<<<<<< HEAD
-            
+
             vperp = Delta_vperp*np.sqrt(abs(1-((vpar-vpar_bar)/Delta_vpar)**2))
-=======
-
-
-            for i in range(2*Nv):
-                vperp[i] = Delta_vperp*np.sqrt(1-((vpar[i]-vpar_bar)/Delta_vpar)**2)
-            #vperp = (1-((vpar-vpar_bar)/Delta_vpar)**2)*Delta_vperp/()
-            # for i in range(2*Nv):
-            #     vperp[i] = Delta_vperp*np.sqrt(1-((vpar[i]-vpar_bar)/Delta_vpar)**2)
-            # return vpar/vec_Te[iR]*mass, vperp/vec_Te[iR]*mass
->>>>>>> 090762891b8cc808cb73b9a96cb3ec5c30ec98f1
             return vpar/np.sqrt(vec_Te[iR]/mass), vperp/np.sqrt(vec_Te[iR]/mass)
 
 
@@ -458,16 +445,7 @@ class Simu:
         np.save(simup / 'Dn.npy', Dn)
         np.save(simup / 'ellipse_vperp.npy', ellipse_vperp)
         np.save(simup / 'ellipse_vpar.npy', ellipse_vpar)
-<<<<<<< HEAD
         np.save(simup / 'vec_theta0.npy', vec_theta0)
-        
-        
-        
-        
-        
-        
-        
-=======
 
         simu.save_to_pickle()
 
@@ -497,4 +475,3 @@ class Simu:
             simu.Dn = np.load(simup / 'Dn.npy')
 
             return simu
->>>>>>> 090762891b8cc808cb73b9a96cb3ec5c30ec98f1

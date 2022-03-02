@@ -312,9 +312,16 @@ class Simu:
         vec_Albajar[Nr-1] = Power_in
         vec_tau = np.zeros(Nr)
         Dn = np.zeros((Nr,2*Nv,Nv))
+<<<<<<< HEAD
+        ellipse_vperp = np.zeros((5, Nr, 2*Nv))
+        ellipse_vpar  = np.zeros((5, Nr, 2*Nv))
+        vec_theta0 = np.zeros(Nr)
+        
+=======
         ellipse_vperp = np.zeros((Nr, 2*Nv))
         ellipse_vpar  = np.zeros((Nr, 2*Nv))
 
+>>>>>>> 090762891b8cc808cb73b9a96cb3ec5c30ec98f1
 #-----------------------------------------------------------------------------------------
         "Computing the ellipse"
         k = omega_b/light_speed
@@ -334,6 +341,10 @@ class Simu:
             #vpar = np.linspace(-vmax,vmax,2*Nv)
             vpar = np.linspace(-Delta_vpar + vpar_bar, Delta_vpar + vpar_bar, 2*Nv)
             vperp = np.zeros(2*Nv)
+<<<<<<< HEAD
+            
+            vperp = Delta_vperp*np.sqrt(abs(1-((vpar-vpar_bar)/Delta_vpar)**2))
+=======
 
 
             for i in range(2*Nv):
@@ -342,6 +353,7 @@ class Simu:
             # for i in range(2*Nv):
             #     vperp[i] = Delta_vperp*np.sqrt(1-((vpar[i]-vpar_bar)/Delta_vpar)**2)
             # return vpar/vec_Te[iR]*mass, vperp/vec_Te[iR]*mass
+>>>>>>> 090762891b8cc808cb73b9a96cb3ec5c30ec98f1
             return vpar/np.sqrt(vec_Te[iR]/mass), vperp/np.sqrt(vec_Te[iR]/mass)
 
 
@@ -362,6 +374,7 @@ class Simu:
                 vT_on_c_loc = np.sqrt(Te_loc/mass) / light_speed
                 arg_theta0 = R_in / R_loc  * N_in * np.cos(theta_in)
                 theta0_loc = compute_theta_res(arg_theta0,P_loc, Omega_ce_loc/omega_b)
+                vec_theta0[iR] = theta0_loc
                 N0_loc = compute_N(theta0_loc, P_loc, Omega_ce_loc, omega_b)
                 sigma_loc = light_speed / (omega_b * N0_loc * W0)
                 Nlim_loc = compute_N(0., P_loc, Omega_ce_loc, omega_b)
@@ -370,7 +383,11 @@ class Simu:
                                     Omega_ce_loc, omega_b)
 
                 # Computing the ellipse
-                ellipse_vpar[iR, :], ellipse_vperp[iR,:] =  ellipse(theta0_loc, Omega_ce_loc, iR)
+                ellipse_vpar[0, iR, :], ellipse_vperp[0, iR,:] =  ellipse(theta0_loc, Omega_ce_loc, iR)
+                ellipse_vpar[1, iR, :], ellipse_vperp[1, iR,:] =  ellipse(theta0_loc - sigma_loc, Omega_ce_loc, iR)
+                ellipse_vpar[2, iR, :], ellipse_vperp[2, iR,:] =  ellipse(theta0_loc + sigma_loc, Omega_ce_loc, iR)
+                ellipse_vpar[3, iR, :], ellipse_vperp[3, iR,:] =  ellipse(theta0_loc - 3*sigma_loc, Omega_ce_loc, iR)
+                ellipse_vpar[4, iR, :], ellipse_vperp[4, iR,:] =  ellipse(theta0_loc + 3*sigma_loc, Omega_ce_loc, iR)
 
                 # Compute the theoretical optical thickness (Albajar)
                 Npar_loc = N0_loc * np.cos(theta0_loc)
@@ -441,6 +458,16 @@ class Simu:
         np.save(simup / 'Dn.npy', Dn)
         np.save(simup / 'ellipse_vperp.npy', ellipse_vperp)
         np.save(simup / 'ellipse_vpar.npy', ellipse_vpar)
+<<<<<<< HEAD
+        np.save(simup / 'vec_theta0.npy', vec_theta0)
+        
+        
+        
+        
+        
+        
+        
+=======
 
         simu.save_to_pickle()
 
@@ -470,3 +497,4 @@ class Simu:
             simu.Dn = np.load(simup / 'Dn.npy')
 
             return simu
+>>>>>>> 090762891b8cc808cb73b9a96cb3ec5c30ec98f1

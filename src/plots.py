@@ -27,13 +27,10 @@ def testing_theta0(simu_name):
     print(vec_theta0)
     print(np.linalg.norm(vec_theta0 - vec_theta0[0]))
 
-def plot_Dn_over_ellipse(simu_name):
+def plot_Dn_over_ellipse(simu_name, ax=None, cbar=True, plot_ellipse=True, labels=True):
 
     # path to simulation directory
     simup = Path(datap / simu_name)
-
-    # path to figures directory
-    figpath = Path('../figures')
 
     # Load arrays for their exploitation
     vec_R = np.load(simup / 'vec_R.npy')
@@ -56,26 +53,33 @@ def plot_Dn_over_ellipse(simu_name):
     Z = np.transpose(Dn[iR_max,:,:])
 
     # Plotting the resonant diffusion coefficient
-    fig, ax0 = plt.subplots()
-    im = ax0.contourf(X, Y, Z, cmap = 'hot_r')
-    fig.colorbar(im, ax=ax0)
-    ax0.set_xlabel("$v_{\parallel} / v_{\mathrm{th}_e}$", fontsize = 20)
-    ax0.set_ylabel("$v_{\perp} / v_{\mathrm{th}_e}$", fontsize = 20)
-    ax0.set_title("$D_{n}/(v_{Te}^2 \Omega_{ce})$", fontsize = 20)
+    if ax is None:
+        fig, ax = plt.subplots()
+    else:
+        fig = ax.get_figure()
 
-    # Plotting the ellipses to compare with
-    ax0.plot(ellipse_vpar[0, iR_max, :], ellipse_vperp[0, iR_max, :], '--', alpha = 0.5)
-    ax0.plot(ellipse_vpar[1, iR_max, :], ellipse_vperp[1, iR_max, :], '-.r', linewidth = 0.5, alpha = 0.5, label = r'$\sigma$')
-    ax0.plot(ellipse_vpar[2, iR_max, :], ellipse_vperp[2, iR_max, :], '-.r', linewidth = 0.5, alpha = 0.5)
-    ax0.plot(ellipse_vpar[3, iR_max, :], ellipse_vperp[3, iR_max, :], '-.b', linewidth = 0.5, alpha = 0.5, label = r'$3\sigma$')
-    ax0.plot(ellipse_vpar[4, iR_max, :], ellipse_vperp[4, iR_max, :], '-.b', linewidth = 0.5, alpha = 0.5)
-    ax0.legend()
-    plt.show()
+    # Z[Z<Z.max()/10] = np.nan
+    Z = np.ma.array(Z, mask=Z < Z.max()/1000)
+    im = ax.contourf(X, Y, Z, cmap = 'hot_r', levels=20)
 
+    if cbar:
+        fig.colorbar(im, ax=ax)
 
-    # saving = input("Do you want to save the figures? [y/n] (default = n)")
-    # if saving == ("y"):
-    #     fig1.savefig(figpath / "Dn_max.pdf")
+    if labels:
+        ax.set_xlabel("$v_{\parallel} / v_{\mathrm{th}_e}$")
+        ax.set_ylabel("$v_{\perp} / v_{\mathrm{th}_e}$")
+        ax.set_title("$D_{n}/(v_{Te}^2 \Omega_{ce})$")
+
+    if plot_ellipse:
+        # Plotting the ellipses to compare with
+        ax.plot(ellipse_vpar[0, iR_max, :], ellipse_vperp[0, iR_max, :], '--', alpha = 0.5, label=r'$\theta_0 = \theta_\mathrm{res}$')
+        ax.plot(ellipse_vpar[1, iR_max, :], ellipse_vperp[1, iR_max, :], '-.r', linewidth = 0.5, alpha = 0.5, label = r'$\sigma$')
+        ax.plot(ellipse_vpar[2, iR_max, :], ellipse_vperp[2, iR_max, :], '-.r', linewidth = 0.5, alpha = 0.5)
+        ax.plot(ellipse_vpar[3, iR_max, :], ellipse_vperp[3, iR_max, :], '-.b', linewidth = 0.5, alpha = 0.5, label = r'$3\sigma$')
+        ax.plot(ellipse_vpar[4, iR_max, :], ellipse_vperp[4, iR_max, :], '-.b', linewidth = 0.5, alpha = 0.5)
+
+    # ax.legend()
+    # plt.show()
 
 def plot_profiles(simu_name, axs=None, show_analy=True):
 

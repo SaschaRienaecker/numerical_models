@@ -2,7 +2,7 @@
 Use multiple CPU cores to run simultaneously different simulation jobs.
 You need to have mpi4py installed.
 Run the script from the command line as follows (e.g. if you have 4 available cores):
-mpiexec --use-hwthread-cpus -n 4 ipython -m mpi4py script.py
+mpiexec --use-hwthread-cpus -n 4 ipython -m mpi4py mpi_job.py
 """
 import numpy as np
 from mpi4py import MPI
@@ -15,7 +15,7 @@ size = comm.Get_size()
 rank = comm.Get_rank()
 root = 0
 
-def def_mpi_task(simus, root=0):
+def mpi_task(simus, root=0):
 
     N_simu = len(simus)
     is_root = rank==root
@@ -71,10 +71,10 @@ def frequency_scan():
 
 def density_scan():
 
-    # frequency scan
-    Ne0 = np.array([1,2,3,4]) # 1e19 m⁻³
+    Ne0 = np.linspace(0.1, 2, 8) # 1e19 m⁻³
     N_simu = len(Ne0)
-    Names = ['Ne0_{}e19'.format(n) for n in Ne0]
+    Names = ['Ne0_{:.2f}e19'.format(n) for n in Ne0]
+    print(Names)
     simus = [None] * N_simu
 
     for i in range(N_simu):
@@ -84,19 +84,48 @@ def density_scan():
                         a0=0.25,
                         harmonic=2,
                         theta_in=np.pi/2,
-                        omega_b=Omega_b[i],
+                        omega_b=7.8e10 * 2 * np.pi,
                         W0=0.02,
                         Power_in=1,
                         vmax=4,
                         Nv=100,
                         Nr=200,
-                        Ne0=Ne0[i],
+                        Ne0=Ne0[i] * 1e19,
                         Te0=2.0e3 * 1.602e-19
                         )
-    # simu.compute()
-    def_mpi_task(simus)
+    return simus
+
+def temp_scan(perp=True):
+    Te0 = np.arange(1,9) # in keV
+    N_simu = len(Te0)
+
+    if perp:
+        Names = ['Te0_{:.2f}keV'.format(T) for T in Te0]
+    else:
+        Names = ['Te0_{:.2f}keV_60deg'.format(T) for T in Te0]
+
+    simus = [None] * N_simu
+
+    for i in range(N_simu):
+        simus[i] = Simu(Names[i],
+                        B0=1.4,
+                        R0=1.0,
+                        a0=0.25,
+                        harmonic=2,
+                        theta_in=np.pi/3,
+                        omega_b=7.8e10 * 2 * np.pi,
+                        W0=0.02,
+                        Power_in=1,
+                        vmax=4,
+                        Nv=100,
+                        Nr=200,
+                        Ne0=1e19,
+                        Te0=Te0[i] * 1e3 * 1.602e-19
+                        )
+    return simus
+
 
 if __name__ == '__main__':
 
-    simus = density_scan()
-    def_mpi_task(simus)
+    simus = temp_scan()
+    mpi_task(simus)

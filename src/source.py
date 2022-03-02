@@ -11,6 +11,7 @@ from pathlib import Path
 from numba import jit
 import sys
 import importlib
+import pickle
 
 # Physical constants
 charge = 1.602 * 10**(-19)   # elementary charge [C]
@@ -91,8 +92,8 @@ class Simu:
             vec_Te[iR] = Te0 * (1 - 0.9 * ((R_loc - R0) / a0)**2)
 
         # Compute the refractive index
-        # @jit(nopython=True)
-        def compute_N(theta_loc, P_loc, omega_ce_loc, omega_b_loc):
+        @jit(nopython=True)
+        def compute_N(theta_loc, P_loc, omega_ce_loc, omega_b_loc, mode='X'):
             normalized_freq = omega_ce_loc / omega_b_loc
             R_loc = (P_loc - normalized_freq) / (1 - normalized_freq)
             L_loc = (P_loc + normalized_freq) / (1 + normalized_freq)
@@ -102,7 +103,8 @@ class Simu:
             tmp2 = (S_loc*P_loc - R_loc*L_loc)**2 * np.tan(theta_loc)**4 + \
                    P_loc**2 * (L_loc - R_loc)**2 * (np.tan(theta_loc)**2 + 1)
             tmp3 = 2 * (S_loc * np.tan(theta_loc)**2 + P_loc)
-            Nx2 = (tmp1 - np.sqrt(tmp2)) / tmp3
+            sign = -1 if mode=='X' else 1
+            Nx2 = (tmp1 + sign * np.sqrt(tmp2)) / tmp3
             return np.sqrt(Nx2)
 
 
@@ -310,31 +312,48 @@ class Simu:
         vec_Albajar[Nr-1] = Power_in
         vec_tau = np.zeros(Nr)
         Dn = np.zeros((Nr,2*Nv,Nv))
+<<<<<<< HEAD
         ellipse_vperp = np.zeros((5, Nr, 2*Nv))
         ellipse_vpar  = np.zeros((5, Nr, 2*Nv))
         vec_theta0 = np.zeros(Nr)
         
+=======
+        ellipse_vperp = np.zeros((Nr, 2*Nv))
+        ellipse_vpar  = np.zeros((Nr, 2*Nv))
+
+>>>>>>> 090762891b8cc808cb73b9a96cb3ec5c30ec98f1
 #-----------------------------------------------------------------------------------------
         "Computing the ellipse"
         k = omega_b/light_speed
-        
+
         def ellipse(theta, Omega_ce, iR):
             kpar = k*np.cos(theta)
             vpar_bar = omega_b*kpar*light_speed**2/((kpar*light_speed)**2 + (harmonic*Omega_ce_loc)**2)
 
-            
+
             Delta_vpar = light_speed* \
                 np.sqrt((kpar*light_speed)**2 + (harmonic*Omega_ce)**2 - omega_b**2)*(harmonic*Omega_ce) \
                 /((kpar*light_speed)**2+(harmonic*Omega_ce)**2)
-                
+
             Delta_vperp = light_speed*np.sqrt(((kpar*light_speed)**2 + (harmonic*Omega_ce)**2 - omega_b**2) \
                                              /((kpar*light_speed)**2 + (harmonic*Omega_ce)**2))
-            
+
             #vpar = np.linspace(-vmax,vmax,2*Nv)
             vpar = np.linspace(-Delta_vpar + vpar_bar, Delta_vpar + vpar_bar, 2*Nv)
             vperp = np.zeros(2*Nv)
+<<<<<<< HEAD
             
             vperp = Delta_vperp*np.sqrt(abs(1-((vpar-vpar_bar)/Delta_vpar)**2))
+=======
+
+
+            for i in range(2*Nv):
+                vperp[i] = Delta_vperp*np.sqrt(1-((vpar[i]-vpar_bar)/Delta_vpar)**2)
+            #vperp = (1-((vpar-vpar_bar)/Delta_vpar)**2)*Delta_vperp/()
+            # for i in range(2*Nv):
+            #     vperp[i] = Delta_vperp*np.sqrt(1-((vpar[i]-vpar_bar)/Delta_vpar)**2)
+            # return vpar/vec_Te[iR]*mass, vperp/vec_Te[iR]*mass
+>>>>>>> 090762891b8cc808cb73b9a96cb3ec5c30ec98f1
             return vpar/np.sqrt(vec_Te[iR]/mass), vperp/np.sqrt(vec_Te[iR]/mass)
 
 
@@ -362,7 +381,7 @@ class Simu:
                 Power_loc = vec_Power[iR+1]
                 E2_loc = compute_E2(Power_loc, R_loc, theta0_loc, N0_loc, omega_p_loc, \
                                     Omega_ce_loc, omega_b)
-                
+
                 # Computing the ellipse
                 ellipse_vpar[0, iR, :], ellipse_vperp[0, iR,:] =  ellipse(theta0_loc, Omega_ce_loc, iR)
                 ellipse_vpar[1, iR, :], ellipse_vperp[1, iR,:] =  ellipse(theta0_loc - sigma_loc, Omega_ce_loc, iR)
@@ -439,6 +458,7 @@ class Simu:
         np.save(simup / 'Dn.npy', Dn)
         np.save(simup / 'ellipse_vperp.npy', ellipse_vperp)
         np.save(simup / 'ellipse_vpar.npy', ellipse_vpar)
+<<<<<<< HEAD
         np.save(simup / 'vec_theta0.npy', vec_theta0)
         
         
@@ -447,3 +467,23 @@ class Simu:
         
         
         
+=======
+
+        simu.save_to_pickle()
+
+    def save_to_pickle(simu):
+        """ Save this class instance to a binary .pkl file """
+        # path to simulation output directory
+        simup = Path(datap / simu.name)
+        with open(simup / 'input.pkl', 'wb') as f:
+            pickle.dump(simu, f)
+
+    def load_pickle(name):
+        """
+        Returns an instance of this class which was saved previously to disk.
+        """
+        simup = Path(datap / name)
+        with open(simup / 'input.pkl', 'rb') as f:
+            simu = pickle.load(f)
+            return simu
+>>>>>>> 090762891b8cc808cb73b9a96cb3ec5c30ec98f1

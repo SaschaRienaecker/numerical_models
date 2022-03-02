@@ -30,6 +30,19 @@ class SimuData:
         self.vec_Albajar = np.load(simup / 'vec_Albajar.npy')
         self.Dn = np.load(simup / 'Dn.npy')
 
+def testing_theta0(simu_name):
+    # path to simulation directory
+    simup = Path(datap / simu_name)
+
+    # path to figures directory
+    figpath = Path('../figures')
+
+    # Load arrays for their exploitation
+    vec_theta0  = np.load(simup / 'vec_theta0.npy')
+    
+    print(vec_theta0[0])
+    print(vec_theta0)
+    print(np.linalg.norm(vec_theta0 - vec_theta0[0]))
 
 def plot_Dn_over_ellipse(simu_name):
 
@@ -56,36 +69,26 @@ def plot_Dn_over_ellipse(simu_name):
     #Compute the position of maximum absorption and compare it to the ellipse
     dP_on_dR = np.diff(vec_Power)
     iR_max = np.argmax(dP_on_dR)
-    print("iR_max", iR_max)
-    # fig1 = plt.figure(1,figsize=(7, 5))
-    # ax1 = fig1.add_subplot(111)
-    # plt.pcolormesh(X, Y, np.transpose(Dn[iR_max,:,:]), shading = 'gouraud')
-    
-    # ax1.set_xlabel("$v_{\parallel}$", fontsize = 20)
-    # ax1.set_ylabel("$v_{\perp}$", fontsize = 20)
-    # ax1.set_title("$D_{n}/(v_{Te}^2 \Omega_{ce})$", fontsize = 20)
-    # ax1.set_aspect('equal','box')
-    # plt.colorbar()
+    # print("iR_max", iR_max)
+    Z = np.transpose(Dn[iR_max,:,:])
 
-    # fig1.show()
-    plt.figure()
-    plt.pcolormesh(X, Y, np.transpose(Dn[iR_max,:,:]), shading = 'gouraud')
-    plt.xlabel("$v_{\parallel}$", fontsize = 20)
-    plt.ylabel("$v_{\perp}$", fontsize = 20)
-    plt.title("$D_{n}/(v_{Te}^2 \Omega_{ce})$", fontsize = 20)
-    plt.colorbar()
+    # Plotting the resonant diffusion coefficient
+    fig, ax0 = plt.subplots()
+    im = ax0.contourf(X, Y, Z, cmap = 'hot_r')
+    fig.colorbar(im, ax=ax0)
+    ax0.set_xlabel("$v_{\parallel}$", fontsize = 20)
+    ax0.set_ylabel("$v_{\perp}$", fontsize = 20)
+    ax0.set_title("$D_{n}/(v_{Te}^2 \Omega_{ce})$", fontsize = 20)    
+    
+    # Plotting the ellipses to compare with
+    ax0.plot(ellipse_vpar[0, iR_max, :], ellipse_vperp[0, iR_max, :], '--', alpha = 0.5)
+    ax0.plot(ellipse_vpar[1, iR_max, :], ellipse_vperp[1, iR_max, :], '-.r', linewidth = 0.5, alpha = 0.5, label = r'$\sigma$')
+    ax0.plot(ellipse_vpar[2, iR_max, :], ellipse_vperp[2, iR_max, :], '-.r', linewidth = 0.5, alpha = 0.5)
+    ax0.plot(ellipse_vpar[3, iR_max, :], ellipse_vperp[3, iR_max, :], '-.b', linewidth = 0.5, alpha = 0.5, label = r'$3\sigma$')
+    ax0.plot(ellipse_vpar[4, iR_max, :], ellipse_vperp[4, iR_max, :], '-.b', linewidth = 0.5, alpha = 0.5)
+    ax0.legend()
     plt.show()
     
-    # print("ellispe_vperp", np.shape(ellipse_vperp[iR_max, :]))
-    # print("vpar", np.shape(Vpar))
-    
-    plt.figure()
-    plt.plot(ellipse_vpar[iR_max, :], ellipse_vperp[iR_max, :])
-    plt.show()
-    
-    #print(np.linalg.norm(ellipse_vperp))
-    
-    #print('P_{abs,tot}^{mod} / P_{abs,tot}^{ana}', (vec_Power[-1] - vec_Power[1])/(vec_Albajar[-1]-vec_Albajar[1]))
 
     # saving = input("Do you want to save the figures? [y/n] (default = n)")
     # if saving == ("y"):

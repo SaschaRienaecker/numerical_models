@@ -458,4 +458,15 @@ class Simu:
         simup = Path(datap / name)
         with open(simup / 'input.pkl', 'rb') as f:
             simu = pickle.load(f)
+
+            # Load arrays for their exploitation
+            simu.vec_R = np.load(simup / 'vec_R.npy')
+            simu.vec_Ne = np.load(simup / 'vec_Ne.npy')
+            simu.vec_Te = np.load(simup / 'vec_Te.npy')
+            simu.Vpar = np.load(simup / 'Vpar.npy')
+            simu.Vperp = np.load(simup / 'Vperp.npy')
+            simu.vec_Power = np.load(simup / 'vec_Power.npy')
+            simu.vec_Albajar = np.load(simup / 'vec_Albajar.npy')
+            simu.Dn = np.load(simup / 'Dn.npy')
+
             return simu

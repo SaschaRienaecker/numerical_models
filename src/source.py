@@ -435,6 +435,7 @@ class Simu:
                 # Normalisation of the resonant diffusion coefficient
                 Dn[iR, :, :] = Dn[iR, :, :] / (Omega_ce_loc * Te_loc / mass)
 
+
             # Fill the power vector
             vec_Power[iR] = vec_Power[iR+1] - Power_absorbed
             vec_Albajar[iR] = Power_in * np.exp(-tau_loc)

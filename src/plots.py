@@ -13,7 +13,6 @@ import sys
 datap = Path('../data')
 
 
-
 def testing_theta0(simu_name):
     # path to simulation directory
     simup = Path(datap / simu_name)
@@ -60,8 +59,8 @@ def plot_Dn_over_ellipse(simu_name):
     fig, ax0 = plt.subplots()
     im = ax0.contourf(X, Y, Z, cmap = 'hot_r')
     fig.colorbar(im, ax=ax0)
-    ax0.set_xlabel("$v_{\parallel}$", fontsize = 20)
-    ax0.set_ylabel("$v_{\perp}$", fontsize = 20)
+    ax0.set_xlabel("$v_{\parallel} / v_{\mathrm{th}_e}$", fontsize = 20)
+    ax0.set_ylabel("$v_{\perp} / v_{\mathrm{th}_e}$", fontsize = 20)
     ax0.set_title("$D_{n}/(v_{Te}^2 \Omega_{ce})$", fontsize = 20)
 
     # Plotting the ellipses to compare with

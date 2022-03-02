@@ -8,6 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
 import sys
+from source import Simu
 
 # path to data directory
 datap = Path('../data')
@@ -84,29 +85,32 @@ def plot_Dn_over_ellipse(simu_name, ax=None, cbar=True, plot_ellipse=True, label
 def plot_profiles(simu_name, axs=None, show_analy=True):
 
     if axs is None:
-        fig, axs = plt.subplots(3,1,sharex=True)
+        fig, axs = plt.subplots(2,1,sharex=True)
 
-    simu = SimuData(simu_name)
+    simu = Simu.load_pickle(simu_name)
 
-    [ax01, ax02, ax03] = axs
+    [ax01, ax03] = axs
 
     vec_R  = simu.vec_R
     vec_Ne = simu.vec_Ne
     vec_Te = simu.vec_Te
     vec_Power = simu.vec_Power
     vec_Albajar = simu.vec_Albajar
+    R_norm = (vec_R - simu.R0) / simu.a0
 
     # Plot the density, temperature and Power profiles
-    ax01.plot(vec_R, vec_Ne)
-    ax01.set_ylabel("$N_e$ [$m^{-3}$]", fontsize = 20)
-    ax02.plot(vec_R, vec_Te / (1.602 * 10**(-19)))
-    ax02.set_ylabel("$T_e$ [eV]", fontsize = 20)
-    ax03.plot(vec_R, (vec_Power[-1] - vec_Power)/vec_Power[-1], '-b')
+    ax01.plot(R_norm, vec_Ne / 1e19, label="$n_e$ [$10^{19}\,\mathrm{m}^{-3}$]")
+    # ax01.set_ylabel("$N_e$ [$m^{-3}$]")
+    ax01.plot(R_norm, vec_Te / 1e3 / (1.602 * 10**(-19)), label="$T_e$ [keV]")
+    ax01.plot(R_norm, simu.R0 * simu.B0 / vec_R, label='$B$ [T]')
+
+    # ax02.set_ylabel("$T_e$ [keV]")
+    ax03.plot(R_norm, (vec_Power[-1] - vec_Power)/vec_Power[-1], '-b')
     if show_analy:
-        ax03.plot(vec_R, (vec_Albajar[-1] - vec_Albajar)/vec_Albajar[-1], '--r')
-    ax03.set_xlabel("$R - R_0$", fontsize = 20)
-    ax03.set_ylabel("$P_{abs}/P_{in}$", fontsize = 20)
-    ax03.legend(["simulation","theory"])
+        ax03.plot(R_norm, (vec_Albajar[-1] - vec_Albajar)/vec_Albajar[-1], '--r')
+    ax03.set_xlabel("$(R - R_0)/a$")
+    ax03.set_ylabel("$P_\mathrm{abs}/P_\mathrm{in}$")
+    # ax03.legend(["simulation","theory"])
 
 def plot_max_abs(simu_name, ax=None, labels=True):
 

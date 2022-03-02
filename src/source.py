@@ -107,6 +107,7 @@ class Simu:
             tmp2 = (S_loc*P_loc - R_loc*L_loc)**2 * np.tan(theta_loc)**4 + \
                    P_loc**2 * (L_loc - R_loc)**2 * (np.tan(theta_loc)**2 + 1)
             tmp3 = 2 * (S_loc * np.tan(theta_loc)**2 + P_loc)
+            # Sascha, mode O:
             sign = -1 if mode=='X' else 1
             Nx2 = (tmp1 + sign * np.sqrt(tmp2)) / tmp3
             return np.sqrt(Nx2)
@@ -263,12 +264,14 @@ class Simu:
             n0 = omega_b * np.sqrt(1 - Npar**2) / Omega_ce
             tmp = omega_b * (omega_p**2 - (omega_b**2-Omega_ce**2) * (1-N0**2)) / \
                       (Omega_ce*omega_p**2)
-            # in case of close to perpendicular incidence in O-mode: (see Donnel_ECCD_2022, Sec. 2.4)
+
+            # Sascha: in case of close to perpendicular incidence in O-mode: (see Donnel_ECCD_2022, Sec. 2.4)
             if mode=='O' and abs(theta%np.pi - np.pi/2) < 1e-2:
                 print('test exception in O-mode')
                 ex = 0
                 ey = 0
                 ez = P_loc**(-1/2)
+
             else:
                 Small_a = (1 + P_loc*(Npar*tmp/(P_loc-Nperp**2))**2) * np.sin(theta)
                 Small_b = abs(1 + P_loc / (P_loc-Nperp**2) * tmp**2) * abs(np.cos(theta))

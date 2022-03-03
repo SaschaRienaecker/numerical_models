@@ -49,7 +49,7 @@ class Simu:
         self.Te0        = Te0   # maximum of electron temperature [J] (Warning: kB included)
 
         self.mode       = mode  # polarization ('X' or 'O')
-        
+
 
     def compute(simu):
 
@@ -352,9 +352,9 @@ class Simu:
         vec_theta0 = np.zeros(Nr)
 
 #-----------------------------------------------------------------------------------------
-        "Computing the area of absorption (Rmin, Rmax)" 
+        "Computing the area of absorption (Rmin, Rmax)"
         abs_bounds = np.array([vec_R[Nr-2], harmonic*Omega_ce0/omega_b*R0]) # Gives the couple (Rmin, Rmax)
-  
+
         def lower_bound(abs_bounds, extremal_v, iR):
             # extremal_v = [vpar_min, vpar_max]
             if (abs(extremal_v[0]) < 3) or (abs(extremal_v[-1]) < 3):
@@ -392,7 +392,7 @@ class Simu:
         for iR in range(Nr-2,-1,-1):
             Power_absorbed = 0.
             R_loc = vec_R[iR]
-            
+
             if R_loc < max(R_res_max,R_eff_max) and R_loc > R_eff_min:
                 Ne_loc = vec_Ne[iR]
                 Te_loc = vec_Te[iR]
@@ -407,7 +407,6 @@ class Simu:
                 N0_loc = compute_N(theta0_loc, P_loc, Omega_ce_loc, omega_b)
                 sigma_loc = light_speed / (omega_b * N0_loc * W0)
                 Nlim_loc = compute_N(0., P_loc, Omega_ce_loc, omega_b)
-                print(Nlim_loc)
                 Power_loc = vec_Power[iR+1]
                 E2_loc = compute_E2(Power_loc, R_loc, theta0_loc, N0_loc, omega_p_loc, \
                                     Omega_ce_loc, omega_b)
@@ -418,11 +417,11 @@ class Simu:
                 ellipse_vpar[2, iR, :], ellipse_vperp[2, iR,:] =  ellipse(theta0_loc + sigma_loc, Omega_ce_loc, iR)
                 ellipse_vpar[3, iR, :], ellipse_vperp[3, iR,:] =  ellipse(theta0_loc - 3*sigma_loc, Omega_ce_loc, iR)
                 ellipse_vpar[4, iR, :], ellipse_vperp[4, iR,:] =  ellipse(theta0_loc + 3*sigma_loc, Omega_ce_loc, iR)
-                
+
                 # Victor : computing the area of absorption
                 extremal_v = np.array([ellipse_vpar[0, iR, 0], ellipse_vpar[0, iR, -1]])
                 lower_bound(abs_bounds, extremal_v, iR)
-                
+
                 # Compute the theoretical optical thickness (Albajar)
                 Npar_loc = N0_loc * np.cos(theta0_loc)
                 Nperp_loc = N0_loc * np.sin(theta0_loc)
@@ -522,6 +521,10 @@ class Simu:
             simu.vec_Power = np.load(simup / 'vec_Power.npy')
             simu.vec_Albajar = np.load(simup / 'vec_Albajar.npy')
             simu.Dn = np.load(simup / 'Dn.npy')
-            simu.abs_bounds = np.load(simup / 'abs_bounds.npy')
+            try:
+                simu.abs_bounds = np.load(simup / 'abs_bounds.npy')
+            except:
+                print('abs_bound.npy not found')
+                pass
 
             return simu

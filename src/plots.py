@@ -93,7 +93,7 @@ def plot_Dn_over_ellipse(simu_name, ax=None, cbar=True, plot_ellipse=True, label
     # plt.show()
     return im
 
-def plot_profiles(simu_name, axs=None, show_analy=True):
+def plot_profiles(simu_name, axs=None, show_analy=True, show_bounds=False):
 
     if axs is None:
         fig, axs = plt.subplots(2,1,sharex=True)
@@ -107,11 +107,6 @@ def plot_profiles(simu_name, axs=None, show_analy=True):
     vec_Power = simu.vec_Power
     vec_Albajar = simu.vec_Albajar
     R_norm = (vec_R - simu.R0) / simu.a0
-    abs_bounds = simu.abs_bounds
-
-    # Victor : to be modified
-    # simup = Path(datap / simu_name)
-    # abs_bounds  = np.load(simup / 'abs_bounds.npy')
 
     # Plot the density, temperature and Power profiles
     ax01.plot(R_norm, vec_Ne / 1e19, label="$n_e$ [$10^{19}\,\mathrm{m}^{-3}$]")
@@ -120,10 +115,11 @@ def plot_profiles(simu_name, axs=None, show_analy=True):
     ax01.plot(R_norm, simu.R0 * simu.B0 / vec_R, label='$B$ [T]')
     
     # Victor : area of absorption
-    print(abs_bounds)
-    
-    ax03.plot((abs_bounds[0] - simu.R0) / simu.a0*np.ones(len(R_norm)), R_norm, label = r'$R_{min}$')
-    ax03.plot((abs_bounds[1] - simu.R0) / simu.a0*np.ones(len(R_norm)), R_norm, label = r'$R_{max}$')
+    if show_bounds:
+        abs_bounds = simu.abs_bounds
+        print(abs_bounds)
+        ax03.plot((abs_bounds[0] - simu.R0) / simu.a0*np.ones(len(R_norm)), R_norm, label = r'$R_{min}$')
+        ax03.plot((abs_bounds[1] - simu.R0) / simu.a0*np.ones(len(R_norm)), R_norm, label = r'$R_{max}$')
 
     # ax02.set_ylabel("$T_e$ [keV]")
     ax03.plot(R_norm, (vec_Power[-1] - vec_Power)/vec_Power[-1], '-b')

@@ -154,9 +154,38 @@ def angle_scan():
     return simus
 
 def compare_O_and_X_mode():
-    pass
+
+    modes = ['X', 'X', 'X', 'O', 'O', 'O']
+    harmonics = np.array([2, 3, 4, 1, 2, 3])
+    freq_factor = harmonics / 2
+
+    N_simu = len(modes)
+    Names = ['mode_compar_{}'.format(n) for n in range(N_simu)]
+    print(Names)
+    simus = [None] * N_simu
+
+
+
+    for i in range(N_simu):
+        simus[i] = Simu(Names[i],
+                        B0=1.4,
+                        R0=1.0,
+                        a0=0.25,
+                        harmonic=harmonics[i],
+                        theta_in=np.pi/2,
+                        omega_b=7.8e10 * 2 * np.pi * freq_factor[i],
+                        W0=0.02,
+                        Power_in=1,
+                        vmax=4,
+                        Nv=100,
+                        Nr=200,
+                        Ne0=1e19,
+                        Te0=4 * 2.0e3 * 1.602e-19,
+                        mode=modes[i]
+                        )
+    return simus
 
 if __name__ == '__main__':
 
-    simus = frequency_scan()
+    simus = compare_O_and_X_mode()
     mpi_task(simus)

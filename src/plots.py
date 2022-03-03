@@ -28,7 +28,8 @@ def testing_theta0(simu_name):
     print(vec_theta0)
     print(np.linalg.norm(vec_theta0 - vec_theta0[0]))
 
-def plot_Dn_over_ellipse(simu_name, ax=None, cbar=True, plot_ellipse=True, labels=True):
+def plot_Dn_over_ellipse(simu_name, ax=None, cbar=True, plot_ellipse=True, labels=True, vmin=None, vmax=None):
+    from matplotlib import ticker
 
     # path to simulation directory
     simup = Path(datap / simu_name)
@@ -59,12 +60,20 @@ def plot_Dn_over_ellipse(simu_name, ax=None, cbar=True, plot_ellipse=True, label
     else:
         fig = ax.get_figure()
 
-    # Z[Z<Z.max()/10] = np.nan
-    Z = np.ma.array(Z, mask=Z < Z.max()/1000)
-    im = ax.contourf(X, Y, Z, cmap = 'hot_r', levels=20)
+    Z[Z<Z.max()/1e4] = np.nan
+    print(np.nanmax(Z))
+    # Z = np.ma.array(Z, mask=Z < Z.max()/1000)
+    if vmin is None:
+        vmin = 0
+    if vmax is None:
+        vmax = np.nanmax(Z)
+
+    im = ax.contourf(X, Y, Z, cmap = 'hot_r', levels=20, vmin=vmin, vmax=vmax,
+                     locator=ticker.LogLocator(), alpha=0.5
+                     )
 
     if cbar:
-        fig.colorbar(im, ax=ax)
+        fig.colorbar(im, ax=ax, location='top')
 
     if labels:
         ax.set_xlabel("$v_{\parallel} / v_{\mathrm{th}_e}$")
@@ -73,7 +82,7 @@ def plot_Dn_over_ellipse(simu_name, ax=None, cbar=True, plot_ellipse=True, label
 
     if plot_ellipse:
         # Plotting the ellipses to compare with
-        ax.plot(ellipse_vpar[0, iR_max, :], ellipse_vperp[0, iR_max, :], '--', alpha = 0.5, label=r'$\theta_0 = \theta_\mathrm{res}$')
+        ax.plot(ellipse_vpar[0, iR_max, :], ellipse_vperp[0, iR_max, :], '--', color='black', alpha = 1.0, label=r'$\theta_0 = \theta_\mathrm{res}$')
         ax.plot(ellipse_vpar[1, iR_max, :], ellipse_vperp[1, iR_max, :], '-.r', linewidth = 0.5, alpha = 0.5, label = r'$\sigma$')
         ax.plot(ellipse_vpar[2, iR_max, :], ellipse_vperp[2, iR_max, :], '-.r', linewidth = 0.5, alpha = 0.5)
         ax.plot(ellipse_vpar[3, iR_max, :], ellipse_vperp[3, iR_max, :], '-.b', linewidth = 0.5, alpha = 0.5, label = r'$3\sigma$')
@@ -81,6 +90,7 @@ def plot_Dn_over_ellipse(simu_name, ax=None, cbar=True, plot_ellipse=True, label
 
     # ax.legend()
     # plt.show()
+    return im
 
 def plot_profiles(simu_name, axs=None, show_analy=True):
 
@@ -131,7 +141,7 @@ def plot_max_abs(simu_name, ax=None, labels=True):
     iR_max = np.argmax(dP_on_dR)
     #im = plt.pcolor(Vpar, Vperp, np.transpose(Dn[iR_max,:,:]), **imshowargs)
     z = np.transpose(Dn[iR_max,:,:])
-    z[z<1e-3*z.max()] = np.nan
+    # z[z<1e-3*z.max()] = np.nan
     im = ax.imshow(z,extent=[Vpar[0], Vpar[-1], Vperp[0], Vperp[-1]],
                    origin='lower', cmap='seismic', vmax=z.max(), vmin=-z.max(), aspect='auto')
     if labels:

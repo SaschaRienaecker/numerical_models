@@ -101,14 +101,21 @@ class Simu:
             normalized_freq = omega_ce_loc / omega_b_loc
             R_loc = (P_loc - normalized_freq) / (1 - normalized_freq)
             L_loc = (P_loc + normalized_freq) / (1 + normalized_freq)
+
+            # treat analytically the badly-behaved case of theta~0
+            if abs(theta_loc) < 1e-2:
+                return np.sqrt(R_loc) if mode=='X' else np.sqrt(L_loc)
+
             S_loc = 0.5 * (R_loc + L_loc)
             tmp1 = (R_loc*L_loc + S_loc*P_loc) * np.tan(theta_loc)**2 + \
                    2 * P_loc * S_loc
             tmp2 = (S_loc*P_loc - R_loc*L_loc)**2 * np.tan(theta_loc)**4 + \
                    P_loc**2 * (L_loc - R_loc)**2 * (np.tan(theta_loc)**2 + 1)
             tmp3 = 2 * (S_loc * np.tan(theta_loc)**2 + P_loc)
+
             # Sascha, mode O:
             sign = -1 if mode=='X' else 1
+
             Nx2 = (tmp1 + sign * np.sqrt(tmp2)) / tmp3
             return np.sqrt(Nx2)
 
@@ -132,8 +139,8 @@ class Simu:
                 tmp3 =  P_loc * (P_loc**2 - Omegace_on_omegab_loc**2) + \
                         lambda2 * Omegace_on_omegab_loc**2 * (P_loc - 1)
                 x_lambda = (tmp1 + tmp2) / tmp3
-                if abs(x_lambda) > 1:
-                    print(x_lambda)
+                # if abs(lambda_loc) > 1:
+                #     print(lambda_loc)
                 if ( lambda_loc>0 ):
                     return 0.5*np.arccos(x_lambda)
                 else:
@@ -180,8 +187,11 @@ class Simu:
             g1 = 2 * (tan2_theta + 1) * omega2_b * (2 * (omega2_b - omega2_p) - Omega2_ce)
             g2 = 4 * (tan2_theta + 1) * (omega2_b**2 - omega2_p**2)
             g3 = 2 * ((tan2_theta + 1) * omega2_b**2 - omega2_p*Omega2_ce)
+
+            # Sascha: O/X-mode --> sign change (see Donnel_ECCD_2022 eq. (81))
+            sign = -1 if mode=='X' else 1
             vg = light_speed * N_theta_loc * f3 / \
-                 (g1 - Omega_ce_loc*omega2_p*g2/(2*omega_b_loc*np.sqrt(f2)) - N_theta_loc**2 * g3)
+                 (g1 + sign * Omega_ce_loc*omega2_p*g2/(2*omega_b_loc*np.sqrt(f2)) - N_theta_loc**2 * g3)
             return Power_loc / (np.pi**1.5 * R_loc * W0 * epsilon0 * np.sin(theta_loc)**3 * abs(vg))
 
 
@@ -387,6 +397,7 @@ class Simu:
                 N0_loc = compute_N(theta0_loc, P_loc, Omega_ce_loc, omega_b)
                 sigma_loc = light_speed / (omega_b * N0_loc * W0)
                 Nlim_loc = compute_N(0., P_loc, Omega_ce_loc, omega_b)
+                print(Nlim_loc)
                 Power_loc = vec_Power[iR+1]
                 E2_loc = compute_E2(Power_loc, R_loc, theta0_loc, N0_loc, omega_p_loc, \
                                     Omega_ce_loc, omega_b)

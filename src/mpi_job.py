@@ -46,7 +46,7 @@ def mpi_task(simus, root=0):
 def frequency_scan():
 
     # frequency scan
-    F = np.array([50,60,70,80,90,100])
+    F = np.array([63,70,80,90,100])
     N_simu = len(F)
     Names = ['freq_{}GHz'.format(f) for f in F]
     simus = [None] * N_simu
@@ -158,5 +158,5 @@ def compare_O_and_X_mode():
 
 if __name__ == '__main__':
 
-    simus = angle_scan()
+    simus = frequency_scan()
     mpi_task(simus)

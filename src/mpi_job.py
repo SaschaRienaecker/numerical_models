@@ -148,8 +148,8 @@ def angle_scan():
                         vmax=4,
                         Nv=100,
                         Nr=200,
-                        Ne0=.3e19,
-                        Te0=4 * 2.0e3 * 1.602e-19
+                        Ne0=1e19,
+                        Te0=2.0e3 * 1.602e-19
                         )
     return simus
 
@@ -187,5 +187,5 @@ def compare_O_and_X_mode():
 
 if __name__ == '__main__':
 
-    simus = compare_O_and_X_mode()
+    simus = angle_scan()
     mpi_task(simus)

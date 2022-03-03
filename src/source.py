@@ -316,19 +316,11 @@ class Simu:
         vec_Albajar[Nr-1] = Power_in
         vec_tau = np.zeros(Nr)
         Dn = np.zeros((Nr,2*Nv,Nv))
-<<<<<<< HEAD
-
-=======
->>>>>>> 4fc5425c1996dda7576bf5c3d997a6a500e4d9d9
         ellipse_vperp = np.zeros((5, Nr, 2*Nv))
         ellipse_vpar  = np.zeros((5, Nr, 2*Nv))
         vec_theta0 = np.zeros(Nr)
 
-<<<<<<< HEAD
 
-
-=======
->>>>>>> 4fc5425c1996dda7576bf5c3d997a6a500e4d9d9
 #-----------------------------------------------------------------------------------------
         "Computing the ellipse"
         k = omega_b/light_speed
@@ -348,14 +340,9 @@ class Simu:
             #vpar = np.linspace(-vmax,vmax,2*Nv)
             vpar = np.linspace(-Delta_vpar + vpar_bar, Delta_vpar + vpar_bar, 2*Nv)
             vperp = np.zeros(2*Nv)
-<<<<<<< HEAD
-            
-            vperp = Delta_vperp*np.sqrt(abs(1-((vpar-vpar_bar)/Delta_vpar)**2))
-            
-=======
 
             vperp = Delta_vperp*np.sqrt(abs(1-((vpar-vpar_bar)/Delta_vpar)**2))
->>>>>>> 4fc5425c1996dda7576bf5c3d997a6a500e4d9d9
+
             return vpar/np.sqrt(vec_Te[iR]/mass), vperp/np.sqrt(vec_Te[iR]/mass)
 
 
@@ -461,10 +448,6 @@ class Simu:
         np.save(simup / 'ellipse_vperp.npy', ellipse_vperp)
         np.save(simup / 'ellipse_vpar.npy', ellipse_vpar)
         np.save(simup / 'vec_theta0.npy', vec_theta0)
-<<<<<<< HEAD
-        
-=======
->>>>>>> 4fc5425c1996dda7576bf5c3d997a6a500e4d9d9
 
         simu.save_to_pickle()
 

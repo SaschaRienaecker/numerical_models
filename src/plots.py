@@ -35,16 +35,17 @@ def plot_Dn_over_ellipse(simu_name, ax=None, cbar=True, plot_ellipse=True, label
     simup = Path(datap / simu_name)
 
     # Load arrays for their exploitation
-    vec_R = np.load(simup / 'vec_R.npy')
-    vec_Ne = np.load(simup / 'vec_Ne.npy')
-    vec_Te = np.load(simup / 'vec_Te.npy')
-    Vpar = np.load(simup / 'Vpar.npy')
-    Vperp = np.load(simup / 'Vperp.npy')
-    vec_Power = np.load(simup / 'vec_Power.npy')
-    vec_Albajar = np.load(simup / 'vec_Albajar.npy')
-    Dn = np.load(simup / 'Dn.npy')
+    vec_R         = np.load(simup / 'vec_R.npy')
+    vec_Ne        = np.load(simup / 'vec_Ne.npy')
+    vec_Te        = np.load(simup / 'vec_Te.npy')
+    Vpar          = np.load(simup / 'Vpar.npy')
+    Vperp         = np.load(simup / 'Vperp.npy')
+    vec_Power     = np.load(simup / 'vec_Power.npy')
+    vec_Albajar   = np.load(simup / 'vec_Albajar.npy')
+    Dn            = np.load(simup / 'Dn.npy')
     ellipse_vperp = np.load(simup / 'ellipse_vperp.npy')
     ellipse_vpar  = np.load(simup / 'ellipse_vpar.npy')
+    
 
     X, Y = np.meshgrid(Vpar, Vperp)
 
@@ -96,7 +97,6 @@ def plot_profiles(simu_name, axs=None, show_analy=True):
 
     if axs is None:
         fig, axs = plt.subplots(2,1,sharex=True)
-
     simu = Simu.load_pickle(simu_name)
 
     [ax01, ax03] = axs
@@ -107,12 +107,23 @@ def plot_profiles(simu_name, axs=None, show_analy=True):
     vec_Power = simu.vec_Power
     vec_Albajar = simu.vec_Albajar
     R_norm = (vec_R - simu.R0) / simu.a0
+    abs_bounds = simu.abs_bounds
+
+    # Victor : to be modified
+    # simup = Path(datap / simu_name)
+    # abs_bounds  = np.load(simup / 'abs_bounds.npy')
 
     # Plot the density, temperature and Power profiles
     ax01.plot(R_norm, vec_Ne / 1e19, label="$n_e$ [$10^{19}\,\mathrm{m}^{-3}$]")
     # ax01.set_ylabel("$N_e$ [$m^{-3}$]")
     ax01.plot(R_norm, vec_Te / 1e3 / (1.602 * 10**(-19)), label="$T_e$ [keV]")
     ax01.plot(R_norm, simu.R0 * simu.B0 / vec_R, label='$B$ [T]')
+    
+    # Victor : area of absorption
+    print(abs_bounds)
+    
+    ax03.plot((abs_bounds[0] - simu.R0) / simu.a0*np.ones(len(R_norm)), R_norm, label = r'$R_{min}$')
+    ax03.plot((abs_bounds[1] - simu.R0) / simu.a0*np.ones(len(R_norm)), R_norm, label = r'$R_{max}$')
 
     # ax02.set_ylabel("$T_e$ [keV]")
     ax03.plot(R_norm, (vec_Power[-1] - vec_Power)/vec_Power[-1], '-b')

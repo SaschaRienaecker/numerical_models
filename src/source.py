@@ -49,6 +49,7 @@ class Simu:
         self.Te0        = Te0   # maximum of electron temperature [J] (Warning: kB included)
 
         self.mode       = mode  # polarization ('X' or 'O')
+        
 
     def compute(simu):
 
@@ -350,6 +351,14 @@ class Simu:
         ellipse_vpar  = np.zeros((5, Nr, 2*Nv))
         vec_theta0 = np.zeros(Nr)
 
+#-----------------------------------------------------------------------------------------
+        "Computing the area of absorption (Rmin, Rmax)" 
+        abs_bounds = np.array([vec_R[Nr-2], harmonic*Omega_ce0/omega_b*R0]) # Gives the couple (Rmin, Rmax)
+  
+        def lower_bound(abs_bounds, extremal_v, iR):
+            # extremal_v = [vpar_min, vpar_max]
+            if (abs(extremal_v[0]) < 3) or (abs(extremal_v[-1]) < 3):
+                abs_bounds[0] = vec_R[iR]
 
 #-----------------------------------------------------------------------------------------
         "Computing the ellipse"
@@ -383,6 +392,7 @@ class Simu:
         for iR in range(Nr-2,-1,-1):
             Power_absorbed = 0.
             R_loc = vec_R[iR]
+            
             if R_loc < max(R_res_max,R_eff_max) and R_loc > R_eff_min:
                 Ne_loc = vec_Ne[iR]
                 Te_loc = vec_Te[iR]
@@ -408,7 +418,11 @@ class Simu:
                 ellipse_vpar[2, iR, :], ellipse_vperp[2, iR,:] =  ellipse(theta0_loc + sigma_loc, Omega_ce_loc, iR)
                 ellipse_vpar[3, iR, :], ellipse_vperp[3, iR,:] =  ellipse(theta0_loc - 3*sigma_loc, Omega_ce_loc, iR)
                 ellipse_vpar[4, iR, :], ellipse_vperp[4, iR,:] =  ellipse(theta0_loc + 3*sigma_loc, Omega_ce_loc, iR)
-
+                
+                # Victor : computing the area of absorption
+                extremal_v = np.array([ellipse_vpar[0, iR, 0], ellipse_vpar[0, iR, -1]])
+                lower_bound(abs_bounds, extremal_v, iR)
+                
                 # Compute the theoretical optical thickness (Albajar)
                 Npar_loc = N0_loc * np.cos(theta0_loc)
                 Nperp_loc = N0_loc * np.sin(theta0_loc)
@@ -480,6 +494,7 @@ class Simu:
         np.save(simup / 'ellipse_vperp.npy', ellipse_vperp)
         np.save(simup / 'ellipse_vpar.npy', ellipse_vpar)
         np.save(simup / 'vec_theta0.npy', vec_theta0)
+        np.save(simup / 'abs_bounds.npy', abs_bounds)
 
         simu.save_to_pickle()
 
@@ -507,5 +522,6 @@ class Simu:
             simu.vec_Power = np.load(simup / 'vec_Power.npy')
             simu.vec_Albajar = np.load(simup / 'vec_Albajar.npy')
             simu.Dn = np.load(simup / 'Dn.npy')
+            simu.abs_bounds = np.load(simup / 'abs_bounds.npy')
 
             return simu

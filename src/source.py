@@ -123,12 +123,17 @@ class Simu:
                 lambda2 = lambda_loc**2
                 tmp1 = P_loc**2 * (2*lambda2 - P_loc) + \
                        Omegace_on_omegab_loc**2 * (P_loc * (1 - lambda2)**2 - lambda2**2)
-                tmp2 = Omegace_on_omegab_loc * (1 - P_loc) * lambda2 * \
+
+                # Sascha O-mode modif
+                sign = 1 if mode=='X' else -1
+
+                tmp2 = sign * Omegace_on_omegab_loc * (1 - P_loc) * lambda2 * \
                        np.sqrt((Omegace_on_omegab_loc * (1 - lambda2))**2 + 4 * P_loc * lambda2)
                 tmp3 =  P_loc * (P_loc**2 - Omegace_on_omegab_loc**2) + \
                         lambda2 * Omegace_on_omegab_loc**2 * (P_loc - 1)
                 x_lambda = (tmp1 + tmp2) / tmp3
-
+                if abs(x_lambda) > 1:
+                    print(x_lambda)
                 if ( lambda_loc>0 ):
                     return 0.5*np.arccos(x_lambda)
                 else:
@@ -147,14 +152,19 @@ class Simu:
             if (abs(vperp) < 0.01):
                 return 0.
             else:
-                tmp1 = (1 + T_loc / (S_loc - Ntheta**2)) * jn(harmonic+1,rho)
-                tmp2 = (1 - T_loc / (S_loc - Ntheta**2)) * jn(harmonic-1,rho)
-                tmp3 = - 2 * Ntheta**2 * np.cos(theta) * np.sin(theta) * vpar * jn(harmonic,rho) / \
-                       (P_loc - (Ntheta*np.sin(theta))**2) / vperp
-                tmp4 = 4 * (1 + (T_loc / (S_loc - Ntheta**2))**2 + \
-                            (Ntheta**2 * np.cos(theta) * np.sin(theta) / \
-                             (P_loc - (Ntheta*np.sin(theta))**2))**2)
-                return (tmp1 + tmp2 + tmp3)**2 / tmp4
+                # Sascha: in case of close to perpendicular incidence in O-mode
+                # use analytical limit of Donnel_PPCF_2021_ECRH eq. (29)
+                if mode=='O' and abs(theta - np.pi/2) < 1e-2:
+                    return (vpar * jn(harmonic,rho) / vperp)**2
+                else:
+                    tmp1 = (1 + T_loc / (S_loc - Ntheta**2)) * jn(harmonic+1,rho)
+                    tmp2 = (1 - T_loc / (S_loc - Ntheta**2)) * jn(harmonic-1,rho)
+                    tmp3 = - 2 * Ntheta**2 * np.cos(theta) * np.sin(theta) * vpar * jn(harmonic,rho) / \
+                           (P_loc - (Ntheta*np.sin(theta))**2) / vperp
+                    tmp4 = 4 * (1 + (T_loc / (S_loc - Ntheta**2))**2 + \
+                                (Ntheta**2 * np.cos(theta) * np.sin(theta) / \
+                                 (P_loc - (Ntheta*np.sin(theta))**2))**2)
+                    return (tmp1 + tmp2 + tmp3)**2 / tmp4
 
 
         # Compute the electric field given the power of the beam
@@ -266,8 +276,7 @@ class Simu:
                       (Omega_ce*omega_p**2)
 
             # Sascha: in case of close to perpendicular incidence in O-mode: (see Donnel_ECCD_2022, Sec. 2.4)
-            if mode=='O' and abs(theta%np.pi - np.pi/2) < 1e-2:
-                print('test exception in O-mode')
+            if mode=='O' and abs(theta - np.pi/2) < 1e-2:
                 ex = 0
                 ey = 0
                 ez = P_loc**(-1/2)

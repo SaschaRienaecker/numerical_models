@@ -49,7 +49,7 @@ class Simu:
         self.Te0        = Te0   # maximum of electron temperature [J] (Warning: kB included)
 
         self.mode       = mode  # polarization ('X' or 'O')
-        
+
     def compute(simu):
 
         # path to simulation output directory
@@ -107,6 +107,7 @@ class Simu:
             tmp2 = (S_loc*P_loc - R_loc*L_loc)**2 * np.tan(theta_loc)**4 + \
                    P_loc**2 * (L_loc - R_loc)**2 * (np.tan(theta_loc)**2 + 1)
             tmp3 = 2 * (S_loc * np.tan(theta_loc)**2 + P_loc)
+            # Sascha, mode O:
             sign = -1 if mode=='X' else 1
             Nx2 = (tmp1 + sign * np.sqrt(tmp2)) / tmp3
             return np.sqrt(Nx2)
@@ -263,16 +264,25 @@ class Simu:
             n0 = omega_b * np.sqrt(1 - Npar**2) / Omega_ce
             tmp = omega_b * (omega_p**2 - (omega_b**2-Omega_ce**2) * (1-N0**2)) / \
                       (Omega_ce*omega_p**2)
-            Small_a = (1 + P_loc*(Npar*tmp/(P_loc-Nperp**2))**2) * np.sin(theta)
-            Small_b = abs(1 + P_loc / (P_loc-Nperp**2) * tmp**2) * abs(np.cos(theta))
-            ey = np.sqrt(1 / (N0 * np.sqrt(Small_a**2 + Small_b**2)))
-            normalized_freq = Omega_ce / omega_b
-            R_loc = (P_loc - normalized_freq) / (1 - normalized_freq)
-            L_loc = (P_loc + normalized_freq) / (1 + normalized_freq)
-            S_loc = 0.5 * (R_loc + L_loc)
-            T_loc = 0.5 * (R_loc - L_loc)
-            ex = (S_loc - N0**2) * ey * complex(0,1) / T_loc
-            ez = - Npar * Nperp * ex / (P_loc - Nperp**2)
+
+            # Sascha: in case of close to perpendicular incidence in O-mode: (see Donnel_ECCD_2022, Sec. 2.4)
+            if mode=='O' and abs(theta%np.pi - np.pi/2) < 1e-2:
+                print('test exception in O-mode')
+                ex = 0
+                ey = 0
+                ez = P_loc**(-1/2)
+
+            else:
+                Small_a = (1 + P_loc*(Npar*tmp/(P_loc-Nperp**2))**2) * np.sin(theta)
+                Small_b = abs(1 + P_loc / (P_loc-Nperp**2) * tmp**2) * abs(np.cos(theta))
+                ey = np.sqrt(1 / (N0 * np.sqrt(Small_a**2 + Small_b**2)))
+                normalized_freq = Omega_ce / omega_b
+                R_loc = (P_loc - normalized_freq) / (1 - normalized_freq)
+                L_loc = (P_loc + normalized_freq) / (1 + normalized_freq)
+                S_loc = 0.5 * (R_loc + L_loc)
+                T_loc = 0.5 * (R_loc - L_loc)
+                ex = (S_loc - N0**2) * ey * complex(0,1) / T_loc
+                ez = - Npar * Nperp * ex / (P_loc - Nperp**2)
             Axz = ex + Npar * Nperp * ez / (1 - Npar**2)
             xn = omega_b * Nperp * np.sqrt((n_beam/n0)**2 - 1) / Omega_ce
             yn = mu_loc * Npar * np.sqrt(((n_beam/n0)**2 - 1)/(1 - Npar**2))
@@ -316,6 +326,7 @@ class Simu:
         vec_Albajar[Nr-1] = Power_in
         vec_tau = np.zeros(Nr)
         Dn = np.zeros((Nr,2*Nv,Nv))
+
         ellipse_vperp = np.zeros((5, Nr, 2*Nv))
         ellipse_vpar  = np.zeros((5, Nr, 2*Nv))
         vec_theta0 = np.zeros(Nr)
@@ -424,6 +435,7 @@ class Simu:
                 Power_absorbed *= Ne_loc * mass * dVpar * dVperp * dR * R_loc * np.sqrt(2) * np.pi * W0
                 # Normalisation of the resonant diffusion coefficient
                 Dn[iR, :, :] = Dn[iR, :, :] / (Omega_ce_loc * Te_loc / mass)
+
 
             # Fill the power vector
             vec_Power[iR] = vec_Power[iR+1] - Power_absorbed

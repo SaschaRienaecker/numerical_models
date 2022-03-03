@@ -46,19 +46,19 @@ def mpi_task(simus, root=0):
 def frequency_scan():
 
     # frequency scan
-    Omega_b = np.linspace(6, 10, 8) * 1e10 * 2 * np.pi
-    N_simu = len(Omega_b)
-    Names = ['freq_{}'.format(i) for i in range(len(Omega_b))]
+    F = np.array([50,60,70,80,90,100])
+    N_simu = len(F)
+    Names = ['freq_{}GHz'.format(f) for f in F]
     simus = [None] * N_simu
 
     for i in range(N_simu):
-        simus[i] = Simu(    Names[i],
+        simus[i] = Simu(Names[i],
                         B0=1.4,
                         R0=1.0,
                         a0=0.25,
                         harmonic=2,
                         theta_in=np.pi/2,
-                        omega_b=Omega_b[i],
+                        omega_b=F[i] * 1e9 * 2 * np.pi,
                         W0=0.02,
                         Power_in=1,
                         vmax=4,
@@ -71,9 +71,9 @@ def frequency_scan():
 
 def density_scan():
 
-    Ne0 = np.linspace(0.1, 2, 8) # 1e19 m⁻³
+    Ne0 = np.array([0.25, 0.5, 1., 2.]) # 1e19 m⁻³
     N_simu = len(Ne0)
-    Names = ['Ne0_{:.2f}e19'.format(n) for n in Ne0]
+    Names = ['Ne0_{:.1f}e19'.format(n) for n in Ne0]
     print(Names)
     simus = [None] * N_simu
 
@@ -91,7 +91,7 @@ def density_scan():
                         Nv=100,
                         Nr=200,
                         Ne0=Ne0[i] * 1e19,
-                        Te0=2.0e3 * 1.602e-19
+                        Te0= 2.0e3 * 1.602e-19
                         )
     return simus
 
@@ -101,8 +101,10 @@ def temp_scan(perp=True):
 
     if perp:
         Names = ['Te0_{:.2f}keV'.format(T) for T in Te0]
+        theta = np.pi/2
     else:
         Names = ['Te0_{:.2f}keV_60deg'.format(T) for T in Te0]
+        theta = np.pi/3
 
     simus = [None] * N_simu
 
@@ -112,7 +114,7 @@ def temp_scan(perp=True):
                         R0=1.0,
                         a0=0.25,
                         harmonic=2,
-                        theta_in=np.pi/3,
+                        theta_in=theta,
                         omega_b=7.8e10 * 2 * np.pi,
                         W0=0.02,
                         Power_in=1,
@@ -124,8 +126,37 @@ def temp_scan(perp=True):
                         )
     return simus
 
+def angle_scan():
+
+    theta = np.array([0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3]) * np.pi/2 # rad
+    # theta = np.linspace(np.pi/4, np.pi/3, 4, endpoint=False) # 1e19 m⁻³
+    N_simu = len(theta)
+    Names = ['theta_{:.2f}'.format(t) for t in theta]
+    print(Names)
+    simus = [None] * N_simu
+
+    for i in range(N_simu):
+        simus[i] = Simu(Names[i],
+                        B0=1.4,
+                        R0=1.0,
+                        a0=0.25,
+                        harmonic=2,
+                        theta_in=theta[i],
+                        omega_b=7.8e10 * 2 * np.pi,
+                        W0=0.02,
+                        Power_in=1,
+                        vmax=4,
+                        Nv=100,
+                        Nr=200,
+                        Ne0=.3e19,
+                        Te0=4 * 2.0e3 * 1.602e-19
+                        )
+    return simus
+
+def compare_O_and_X_mode():
+    pass
 
 if __name__ == '__main__':
 
-    simus = temp_scan()
+    simus = angle_scan()
     mpi_task(simus)

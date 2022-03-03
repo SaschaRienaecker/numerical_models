@@ -24,7 +24,7 @@ datap = Path('../data')
 
 class Simu:
 
-    def __init__(self, name, B0, R0, a0, harmonic, theta_in, omega_b, W0, Power_in, vmax, Nv, Nr, Ne0, Te0, mode='X'):
+    def __init__(self, name, B0, R0, a0, harmonic, theta_in, omega_b, W0, Power_in, vmax, Nv, Nr, Ne0, Te0, mode='X', method = 0):
         self.name = name
 
         # Plasma inputs
@@ -49,6 +49,9 @@ class Simu:
         self.Te0        = Te0   # maximum of electron temperature [J] (Warning: kB included)
 
         self.mode       = mode  # polarization ('X' or 'O')
+        
+        # area of absorption
+        self.method     = method # method to find (Rmin, Rmax) (0 or 1)
 
     def compute(simu):
 
@@ -77,6 +80,8 @@ class Simu:
         Nr      = simu.Nr       # number of grid points for the major radius direction
 
         mode    = simu.mode
+        
+        method  = simu.method
 
         # Generation of the grid
         Vpar = np.linspace(-vmax,vmax,2*Nv)
@@ -331,6 +336,30 @@ class Simu:
         ellipse_vpar  = np.zeros((5, Nr, 2*Nv))
         vec_theta0 = np.zeros(Nr)
 
+#-----------------------------------------------------------------------------------------
+        "Computing the area of absorption (Rmin, Rmax)" 
+        abs_bounds = np.array([vec_R[Nr-2], vec_R[Nr-2]]) # Gives the couple (Rmin, Rmax). Rmin must be found
+        
+        def absorption_area(abs_bounds, extremal_v, iR, Omega_ce, method = 0):
+            # extremal_v = [vpar_min, vpar_max]
+            v_th = np.sqrt(vec_Te[iR]/mass)
+            
+            if method == 0: # basic method which must give a too wide area of absorption
+                if (abs(extremal_v[0]) >= 3) and (abs(extremal_v[1]) >= 3) and abs_bounds[0] == abs_bounds[1]:
+                    abs_bounds[0], abs_bounds[1] = vec_R[iR], vec_R[iR]
+                
+                elif (abs(extremal_v[0]) < 3) or (abs(extremal_v[1]) < 3):
+                    abs_bounds[0] = vec_R[iR]
+            
+            elif method == 1: # method developed in the article from 2021
+                if omega_b >= harmonic*Omega_ce :
+                    abs_bounds[1] = vec_R[iR]
+                elif omega_b >= harmonic*Omega_ce*np.sqrt(1-(3*v_th/light_speed)**2):
+                    abs_bounds[0] = vec_R[iR]
+            
+            else:
+                raise AssertionError('Choose between 0 and 1 for the method')
+                
 
 #-----------------------------------------------------------------------------------------
         "Computing the ellipse"
@@ -388,6 +417,10 @@ class Simu:
                 ellipse_vpar[2, iR, :], ellipse_vperp[2, iR,:] =  ellipse(theta0_loc + sigma_loc, Omega_ce_loc, iR)
                 ellipse_vpar[3, iR, :], ellipse_vperp[3, iR,:] =  ellipse(theta0_loc - 3*sigma_loc, Omega_ce_loc, iR)
                 ellipse_vpar[4, iR, :], ellipse_vperp[4, iR,:] =  ellipse(theta0_loc + 3*sigma_loc, Omega_ce_loc, iR)
+                
+                # Victor : computing the area of absorption
+                extremal_v = np.array([ellipse_vpar[0, iR, 0], ellipse_vpar[0, iR, -1]])
+                absorption_area(abs_bounds, extremal_v, iR, Omega_ce_loc, method = method)
 
                 # Compute the theoretical optical thickness (Albajar)
                 Npar_loc = N0_loc * np.cos(theta0_loc)
@@ -460,6 +493,7 @@ class Simu:
         np.save(simup / 'ellipse_vperp.npy', ellipse_vperp)
         np.save(simup / 'ellipse_vpar.npy', ellipse_vpar)
         np.save(simup / 'vec_theta0.npy', vec_theta0)
+        np.save(simup / 'abs_bounds.npy', abs_bounds)
 
         simu.save_to_pickle()
 

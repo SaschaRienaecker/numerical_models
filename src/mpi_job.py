@@ -95,12 +95,14 @@ def density_scan():
                         )
     return simus
 
-def temp_scan(perp=True):
-    Te0 = np.arange(1,9) # in keV
+def temp_scan(perp=True, ne=1e19):
+    # Te0 = np.arange(1,9) # in keV
+    Te0 = np.array([1,3,5,7]) # in keV
     N_simu = len(Te0)
 
     if perp:
         Names = ['Te0_{:.2f}keV'.format(T) for T in Te0]
+        # Names = ['Te0_{:.2f}keV_lowdens'.format(T) for T in Te0]
         theta = np.pi/2
     else:
         Names = ['Te0_{:.2f}keV_60deg'.format(T) for T in Te0]
@@ -121,7 +123,7 @@ def temp_scan(perp=True):
                         vmax=4,
                         Nv=100,
                         Nr=200,
-                        Ne0=1e19,
+                        Ne0=ne,
                         Te0=Te0[i] * 1e3 * 1.602e-19
                         )
     return simus
@@ -187,5 +189,5 @@ def compare_O_and_X_mode():
 
 if __name__ == '__main__':
 
-    simus = angle_scan()
+    simus = temp_scan(ne=1e19)
     mpi_task(simus)

@@ -33,7 +33,7 @@ def vthe(T_keV):
 
 def example_profiles():
     plt.style.use('../utils/tex.mplstyle')
-    fs = set_size(width='article', fraction=1, aspect_r=1)
+    fs = set_size(width='article', fraction=.9, aspect_r=.8)
 
     simu_name = 'example'
     fig, axs = plt.subplots(2,1, sharex=True, figsize=fs)
@@ -42,7 +42,16 @@ def example_profiles():
 
     [ax1, ax2] = axs
 
-    ax1.legend(frameon=True, loc='lower left', handlelength=0.5, ncol=1, framealpha=0.8)
+    #ax1.legend(frameon=True, loc='lower left', handlelength=0.5, ncol=1, framealpha=0.8)
+    
+    lines = ax1.get_lines()
+    ax1.text(0.5, 0.05, "$n_e$ [$10^{19}\,\mathrm{m}^{-3}$]", transform=ax1.transAxes,
+             va='bottom', ha='center', color=lines[0].get_color())
+    ax1.text(0.95, 0.95, "$T_e$ [keV]", transform=ax1.transAxes,
+                          va='top', ha='right', color=lines[1].get_color())
+    ax1.text(0.05, 0.65, "$B$ [T]", transform=ax1.transAxes,
+                          va='center', ha='left', color=lines[2].get_color())  
+    
     #xlim = ax1.get_xlim()
     #ax1.axhline(y=2 * , xmin=R_res_norm / (xlim[1] - xlim[0]))
 
@@ -122,7 +131,7 @@ def freq_variation():
 
 def density():
     plt.style.use('../utils/tex.mplstyle')
-    fs = set_size(width='article')
+    fs = set_size(width='article', fraction=0.8, aspect_r=0.5)
 
     simus = density_scan()
 
@@ -146,8 +155,8 @@ def density():
         ax.set_xlabel("$(R - R_0)/a$")
         ax.set_ylabel("$P_\mathrm{abs}/P_\mathrm{in}$")
         #ax.legend(["simulation","theory"])
-        ax.legend(title='$n_{e_0}$ [$10^{19}\mathrm{m}^{-3}$] =', frameon=False)
-        ax.set_xlim(-0.3, 0.3)
+        ax.legend(title='$n_{e_0}$ [$10^{19}\mathrm{m}^{-3}$]', frameon=False)
+        ax.set_xlim(-0.2, 0.2)
 
         # annot = 'X-mode\n'
         # annot += r'$\theta_\mathrm{in}=\pi/2$'

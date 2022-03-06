@@ -28,7 +28,7 @@ def testing_theta0(simu_name):
     print(vec_theta0)
     print(np.linalg.norm(vec_theta0 - vec_theta0[0]))
 
-def plot_Dn_over_ellipse(simu_name, ax=None, cbar=True, plot_ellipse=True, labels=True, vmin=None, vmax=None):
+def plot_Dn_over_ellipse(simu_name, ax=None, cbar=True, plot_ellipse=True, labels=True, vmin=None, vmax=None, log_scale=True):
     from matplotlib import ticker
 
     # path to simulation directory
@@ -68,10 +68,16 @@ def plot_Dn_over_ellipse(simu_name, ax=None, cbar=True, plot_ellipse=True, label
         vmin = 0
     if vmax is None:
         vmax = np.nanmax(Z)
-
-    im = ax.contourf(X, Y, Z, cmap = 'hot_r', levels=20, vmin=vmin, vmax=vmax,
+    
+    if log_scale:
+        im = ax.contourf(X, Y, Z, cmap = 'hot_r', levels=20, vmin=vmin, vmax=vmax,
                      locator=ticker.LogLocator(), alpha=0.5
                      )
+    else:
+        im = ax.contourf(X, Y, Z, cmap = 'hot_r', levels=20, vmin=vmin, vmax=vmax,
+                    alpha=0.7
+                     )
+    
 
     if cbar:
         fig.colorbar(im, ax=ax, location='top')
@@ -84,8 +90,8 @@ def plot_Dn_over_ellipse(simu_name, ax=None, cbar=True, plot_ellipse=True, label
     if plot_ellipse:
         # Plotting the ellipses to compare with
         ax.plot(ellipse_vpar[0, iR_max, :], ellipse_vperp[0, iR_max, :], '--', color='black', alpha = 1.0, label=r'$\theta_0 = \theta_\mathrm{res}$')
-        ax.plot(ellipse_vpar[1, iR_max, :], ellipse_vperp[1, iR_max, :], '-.r', linewidth = 0.5, alpha = 0.5, label = r'$\sigma$')
-        ax.plot(ellipse_vpar[2, iR_max, :], ellipse_vperp[2, iR_max, :], '-.r', linewidth = 0.5, alpha = 0.5)
+        #ax.plot(ellipse_vpar[1, iR_max, :], ellipse_vperp[1, iR_max, :], '-.r', linewidth = 0.5, alpha = 0.5, label = r'$\sigma$')
+        #ax.plot(ellipse_vpar[2, iR_max, :], ellipse_vperp[2, iR_max, :], '-.r', linewidth = 0.5, alpha = 0.5)
         ax.plot(ellipse_vpar[3, iR_max, :], ellipse_vperp[3, iR_max, :], '-.b', linewidth = 0.5, alpha = 0.5, label = r'$3\sigma$')
         ax.plot(ellipse_vpar[4, iR_max, :], ellipse_vperp[4, iR_max, :], '-.b', linewidth = 0.5, alpha = 0.5)
 
